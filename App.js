@@ -1,21 +1,58 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import {AppContextProvider} from './context/AppContext'
+
+import Home from './screens/Home'
+import Trivia from './screens/Trivia'
+import TriviaQ from './screens/TriviaQ'
+import RocketAnimation from './components/RocketAnnimation'
+
+const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppContextProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Felix Games">
+          {/* <Stack.Screen 
+          name="Welcome" 
+          component={RocketAnimation} 
+          options={ () => ({
+            headerBackTitleVisible: false,
+            headerShown: false
+          })}
+          /> */}
+          <Stack.Screen 
+          options={ () => ({
+            
+            headerBackTitleVisible: false,
+            headerTintColor: 'white',
+            headerStyle: {
+              backgroundColor: '#29ab87',
+              height: 120
+            }
+          })}
+          name="Felix Games" 
+          component={Home}
+          />
+          <Stack.Screen 
+            name="Trivia" 
+            component={Trivia} 
+            options={ () => ({
+            
+              headerBackTitleVisible: false,
+              headerTintColor: 'white',
+              headerStyle: {
+                backgroundColor: '#29ab87',
+                height: 120
+              }
+            })}
+            />
+          <Stack.Screen name="TriviaQ" component={TriviaQ} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AppContextProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
