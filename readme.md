@@ -8,6 +8,11 @@ The intent of this app is to have fun! Today the first app is just a simple triv
 - axios for api management 
 - react navigation
 
+## API Documentation 
+This app uses Open Trivia API, it does not require tokens. 
+
+https://opentdb.com/api_config.php 
+
 ## running the app
 install expo then run the server
 
