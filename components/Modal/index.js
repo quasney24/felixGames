@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Text} from 'react-native'
+import { View, Text } from 'react-native';
 import { Button, Overlay } from 'react-native-elements';
 
 const Modal = () => {
@@ -19,4 +19,4 @@ const Modal = () => {
   );
 };
 
-export default Modal
+export default Modal;
