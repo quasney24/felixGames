@@ -6,6 +6,7 @@ import { Text } from 'react-native-elements';
 import SuccessFail from '../SuccessFail';
 import { AppContext } from 'context';
 import Modal from '../Modal';
+import colors from 'consts/colors';
 
 const TriviaQuestions = ({ data }) => {
   //@TODO Need to refactor this logic so this only scrambles once
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   text: {
-    color: '#29ab87',
+    color: colors.primaryColor,
     textAlign: 'center',
   },
   headerText: {

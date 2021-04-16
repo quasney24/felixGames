@@ -6,6 +6,7 @@ import Axios from 'axios';
 import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
 import { AppContext } from 'context';
+import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
   const { getTriviaData } = useContext(AppContext);
@@ -72,7 +73,7 @@ const Trivia = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     textAlign: 'center',
-    backgroundColor: '#29ab87',
+    backgroundColor: colors.primaryColor,
     flex: 1,
   },
   content: {

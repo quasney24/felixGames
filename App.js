@@ -7,6 +7,7 @@ import Home from 'screens/Home';
 import Trivia from 'screens/Trivia';
 import TriviaQ from 'screens/TriviaQ';
 import RocketAnimation from 'components/RocketAnimation';
+import colors from 'consts/colors';
 
 const Stack = createStackNavigator();
 
@@ -28,7 +29,7 @@ export default function App() {
               headerBackTitleVisible: false,
               headerTintColor: 'white',
               headerStyle: {
-                backgroundColor: '#29ab87',
+                backgroundColor: colors.primaryColor,
                 height: 120,
               },
             })}
@@ -42,7 +43,7 @@ export default function App() {
               headerBackTitleVisible: false,
               headerTintColor: 'white',
               headerStyle: {
-                backgroundColor: '#29ab87',
+                backgroundColor: colors.primaryColor,
                 height: 120,
               },
             })}
