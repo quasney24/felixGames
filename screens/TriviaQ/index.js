@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { AppContext } from 'context';
 import TriviaQuestions from 'components/TriviaQuestions';
+import colors from 'consts/colors';
 
 const TriviaQ = () => {
   const { triviaData } = useContext(AppContext);
@@ -16,7 +17,7 @@ const TriviaQ = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#29ab87',
+    backgroundColor: colors.primaryColor,
   },
 });
 

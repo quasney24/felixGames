@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
+import colors from 'consts/colors';
 
 const Home = ({ navigation }) => {
   //@TODO refactor app to build factory pattern style utilizing classes for game types
@@ -17,14 +18,19 @@ const Home = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Card containerStyle={{ borderColor: '#29ab87', borderRadius: 15 }}>
+      <Card
+        containerStyle={{ borderColor: colors.primaryColor, borderRadius: 15 }}>
         <Card.Title style={styles.welcomeText}>Welcome Players!</Card.Title>
         <Text>
           Hello, and welcome to Felix Games! Start by selecting a game mode!
         </Text>
       </Card>
 
-      <Card containerStyle={{ backgroundColor: '#29ab87', borderRadius: 15 }}>
+      <Card
+        containerStyle={{
+          backgroundColor: colors.primaryColor,
+          borderRadius: 15,
+        }}>
         <Card.Title style={styles.buttonText}>Trivia</Card.Title>
         <Card.Divider />
         {triviaOptions.map((l, i) => {

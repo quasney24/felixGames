@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
+import assets from 'consts/assets';
 
 const RocketAnimation = ({ navigation }) => {
   return (
@@ -10,7 +11,7 @@ const RocketAnimation = ({ navigation }) => {
       speed={0.5}
       loop={false}
       onAnimationFinish={() => navigation.navigate('Home')}
-      source={require('../../assets/rocket.json')}
+      source={assets.RocketAnimation}
     />
   );
 };

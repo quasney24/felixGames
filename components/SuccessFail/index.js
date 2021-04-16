@@ -1,5 +1,6 @@
 import React from 'react';
 import LottieView from 'lottie-react-native';
+import assets from 'consts/assets';
 
 const SuccessFail = ({ result, next }) => {
   return (
@@ -9,7 +10,7 @@ const SuccessFail = ({ result, next }) => {
           onAnimationFinish={() => next()}
           autoPlay
           speed={0.8}
-          source={require('../../assets/correct-animation.json')}
+          source={assets.CorrectAnimation}
           loop={false}
         />
       ) : (
@@ -17,7 +18,7 @@ const SuccessFail = ({ result, next }) => {
           onAnimationFinish={() => next()}
           autoPlay
           speed={0.8}
-          source={require('../../assets/wrong-answer.json')}
+          source={assets.WrongAnimation}
           loop={false}
         />
       )}
