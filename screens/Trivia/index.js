@@ -7,6 +7,7 @@ import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
 import { AppContext } from 'context';
 import colors from 'consts/colors';
+import { diff } from 'react-native-reanimated';
 
 const Trivia = ({ navigation }) => {
   const { getTriviaData } = useContext(AppContext);
@@ -20,8 +21,13 @@ const Trivia = ({ navigation }) => {
   useEffect(() => {
     const getAllCategoryData = async () => {
       Axios.get('https://opentdb.com/api_category.php').then((response) => {
-        // if(response.data.)
-        setCategoryData(response.data.trivia_categories);
+        const categories = [];
+        response.data.trivia_categories.forEach((cat) => {
+          cat.name = cat.name.replace('Entertainment: ', '');
+          cat.name = cat.name.replace('Science: ', '');
+          categories.push(cat);
+        });
+        setCategoryData(categories);
       });
     };
     getAllCategoryData();
@@ -45,9 +51,7 @@ const Trivia = ({ navigation }) => {
     <ScrollView style={styles.wrapper}>
       {phaseTwo === false ? (
         <View style={styles.content}>
-          <Text style={styles.title} h2>
-            Select a Category
-          </Text>
+          <Text style={styles.title}>Select a Category</Text>
           <Category
             data={categoryData}
             getId={(value) => getCategoryId(value)}
@@ -55,10 +59,11 @@ const Trivia = ({ navigation }) => {
         </View>
       ) : (
         <View style={styles.content}>
-          <Text style={styles.title} h2>
-            Select a Difficulty
-          </Text>
-          <Difficulty diff={(value) => getDifficulty(value)} />
+          <Text style={styles.title}>Select a Difficulty</Text>
+          <Difficulty
+            diff={difficulty}
+            setDiff={(value) => getDifficulty(value)}
+          />
           <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
             <Text h1 style={styles.title}>
               start
@@ -73,25 +78,27 @@ const Trivia = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     textAlign: 'center',
-    backgroundColor: colors.primaryColor,
+    backgroundColor: colors.white,
     flex: 1,
   },
   content: {
-    marginHorizontal: 50,
+    marginHorizontal: 20,
     alignContent: 'center',
     marginVertical: 20,
   },
   title: {
-    color: 'white',
+    color: colors.primaryColor,
     textAlign: 'center',
+    fontSize: 30,
+    fontWeight: 'bold',
   },
   submit: {
-    height: 50,
-    borderWidth: 1,
+    height: 75,
+    borderWidth: 3,
     borderRadius: 15,
-    borderColor: 'white',
+    borderColor: colors.primaryColor,
     justifyContent: 'center',
-    marginTop: '15%',
+    marginTop: '10%',
   },
 });
 
