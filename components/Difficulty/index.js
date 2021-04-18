@@ -53,7 +53,6 @@ const Difficulty = ({ diff, setDiff }) => {
   );
 };
 
-//@TODO onclick fills color style
 const styles = StyleSheet.create({
   box: {
     borderWidth: 3,

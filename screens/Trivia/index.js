@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { HeaderBackButton } from '@react-navigation/stack';
 import { Text } from 'react-native-elements';
 import Axios from 'axios';
 
@@ -7,7 +8,6 @@ import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
 import { AppContext } from 'context';
 import colors from 'consts/colors';
-import { diff } from 'react-native-reanimated';
 
 const Trivia = ({ navigation }) => {
   const { getTriviaData } = useContext(AppContext);
@@ -46,6 +46,22 @@ const Trivia = ({ navigation }) => {
     getTriviaData(categoryId, difficulty);
     navigation.navigate('TriviaQ');
   };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <HeaderBackButton
+          tintColor={colors.white}
+          onPress={() => {
+            if (phaseTwo) {
+              return setPhaseTwo(false);
+            }
+            navigation.goBack();
+          }}
+        />
+      ),
+    });
+  }, [navigation, phaseTwo]);
 
   return (
     <ScrollView style={styles.wrapper}>
