@@ -1,37 +1,20 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { HeaderBackButton } from '@react-navigation/stack';
 import { Text } from 'react-native-elements';
-import Axios from 'axios';
 
 import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
 import { AppContext } from 'context';
+import { TRIVIAQ_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
-  const { getTriviaData } = useContext(AppContext);
+  const { categoryData, getTriviaData } = useContext(AppContext);
 
-  const [categoryData, setCategoryData] = useState([]);
   const [difficulty, setDifficulty] = useState('');
   const [categoryId, setCategoryId] = useState();
   const [phaseTwo, setPhaseTwo] = useState(false);
-
-  //@TODO refactor this to include in context
-  useEffect(() => {
-    const getAllCategoryData = async () => {
-      Axios.get('https://opentdb.com/api_category.php').then((response) => {
-        const categories = [];
-        response.data.trivia_categories.forEach((cat) => {
-          cat.name = cat.name.replace('Entertainment: ', '');
-          cat.name = cat.name.replace('Science: ', '');
-          categories.push(cat);
-        });
-        setCategoryData(categories);
-      });
-    };
-    getAllCategoryData();
-  }, []);
 
   const getCategoryId = (value) => {
     console.log(value);
@@ -44,7 +27,7 @@ const Trivia = ({ navigation }) => {
   };
   const handleSubmit = () => {
     getTriviaData(categoryId, difficulty);
-    navigation.navigate('TriviaQ');
+    navigation.navigate(TRIVIAQ_SCREEN);
   };
 
   React.useLayoutEffect(() => {
@@ -81,9 +64,7 @@ const Trivia = ({ navigation }) => {
             setDiff={(value) => getDifficulty(value)}
           />
           <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
-            <Text h1 style={styles.title}>
-              start
-            </Text>
+            <Text style={styles.title}>start</Text>
           </TouchableOpacity>
         </View>
       )}

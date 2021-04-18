@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect, useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
+
+import { AppContext } from 'context';
+import { TRIVIA_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Home = ({ navigation }) => {
+  const { getAllCategoryData } = useContext(AppContext);
+
+  useEffect(() => {
+    getAllCategoryData();
+  }, []);
+
   //@TODO refactor app to build factory pattern style utilizing classes for game types
   const triviaOptions = [
     {
@@ -45,7 +54,8 @@ const Home = ({ navigation }) => {
           console.log(l);
           return (
             <ListItem
-              onPress={() => navigation.navigate('Trivia')}
+              key={l.type}
+              onPress={() => navigation.navigate(TRIVIA_SCREEN)}
               bottomDivider>
               <ListItem.Content>
                 <ListItem.Title>{l.type}</ListItem.Title>
@@ -58,7 +68,9 @@ const Home = ({ navigation }) => {
       </Card>
 
       <Card containerStyle={styles.cardContainer}>
-        <Card.Title>Math Challenge</Card.Title>
+        <Card.Title style={{ ...styles.headerText, ...styles.centerText }}>
+          Math Challenge
+        </Card.Title>
         <Card.Divider />
       </Card>
     </View>
@@ -84,7 +96,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 22,
   },
   centerText: {
     textAlign: 'center',
