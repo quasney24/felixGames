@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import React, { createContext, useState, useEffect } from 'react';
-=======
 import React, { createContext, useState } from 'react';
->>>>>>> 7e43237a332f938e20b60b35788e32d5d526708a
 import Axios from 'axios';
 
 export const AppContext = createContext();
@@ -39,9 +35,6 @@ export const AppContextProvider = (props) => {
   };
 
   return (
-<<<<<<< HEAD
-    <AppContext.Provider value={{ getTriviaData, triviaData, id, difficulty }}>
-=======
     <AppContext.Provider
       value={{
         getAllCategoryData,
@@ -51,7 +44,6 @@ export const AppContextProvider = (props) => {
         id,
         difficulty,
       }}>
->>>>>>> 7e43237a332f938e20b60b35788e32d5d526708a
       {props.children}
     </AppContext.Provider>
   );
