@@ -1,3 +1,4 @@
+import colors from 'consts/colors';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -5,17 +6,19 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 const Category = ({ data, getId }) => {
   return (
     <View style={styles.container}>
-      {data.map((value) => {
-        return (
-          <View>
-            <TouchableOpacity
-              style={styles.wrapper}
-              onPress={() => getId(value.id)}>
-              <Text>{value.name}</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      })}
+      {data
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((value) => {
+          return (
+            <View key={value.id}>
+              <TouchableOpacity
+                style={styles.wrapper}
+                onPress={() => getId(value.id)}>
+                <Text style={styles.text}>{value.name}</Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
     </View>
   );
 };
@@ -26,15 +29,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
+    marginTop: 10,
   },
   wrapper: {
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 50,
+    borderColor: colors.primaryColor,
+    borderWidth: 2,
     padding: 10,
-    backgroundColor: 'white',
-    margin: '2%',
+    paddingHorizontal: 20,
+    backgroundColor: colors.primaryColor,
+    marginHorizontal: 7,
+    marginVertical: 7,
   },
-  title: {
+  text: {
+    fontSize: 18,
+    color: colors.white,
     textAlign: 'center',
   },
 });
