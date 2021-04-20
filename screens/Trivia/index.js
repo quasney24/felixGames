@@ -1,31 +1,20 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { HeaderBackButton } from '@react-navigation/stack';
 import { Text } from 'react-native-elements';
-import Axios from 'axios';
 
 import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
 import { AppContext } from 'context';
+import { TRIVIAQ_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
-  const { getTriviaData } = useContext(AppContext);
+  const { categoryData, getTriviaData } = useContext(AppContext);
 
-  const [categoryData, setCategoryData] = useState([]);
   const [difficulty, setDifficulty] = useState('');
   const [categoryId, setCategoryId] = useState();
   const [phaseTwo, setPhaseTwo] = useState(false);
-
-  //@TODO refactor this to include in context
-  useEffect(() => {
-    const getAllCategoryData = async () => {
-      Axios.get('https://opentdb.com/api_category.php').then((response) => {
-        // if(response.data.)
-        setCategoryData(response.data.trivia_categories);
-      });
-    };
-    getAllCategoryData();
-  }, []);
 
   const getCategoryId = (value) => {
     console.log(value);
@@ -38,16 +27,30 @@ const Trivia = ({ navigation }) => {
   };
   const handleSubmit = () => {
     getTriviaData(categoryId, difficulty);
-    navigation.navigate('TriviaQ');
+    navigation.navigate(TRIVIAQ_SCREEN);
   };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <HeaderBackButton
+          tintColor={colors.white}
+          onPress={() => {
+            if (phaseTwo) {
+              return setPhaseTwo(false);
+            }
+            navigation.goBack();
+          }}
+        />
+      ),
+    });
+  }, [navigation, phaseTwo]);
 
   return (
     <ScrollView style={styles.wrapper}>
       {phaseTwo === false ? (
         <View style={styles.content}>
-          <Text style={styles.title} h2>
-            Select a Category
-          </Text>
+          <Text style={styles.title}>Select a Category</Text>
           <Category
             data={categoryData}
             getId={(value) => getCategoryId(value)}
@@ -55,14 +58,13 @@ const Trivia = ({ navigation }) => {
         </View>
       ) : (
         <View style={styles.content}>
-          <Text style={styles.title} h2>
-            Select a Difficulty
-          </Text>
-          <Difficulty diff={(value) => getDifficulty(value)} />
+          <Text style={styles.title}>Select a Difficulty</Text>
+          <Difficulty
+            diff={difficulty}
+            setDiff={(value) => getDifficulty(value)}
+          />
           <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
-            <Text h1 style={styles.title}>
-              start
-            </Text>
+            <Text style={styles.title}>start</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -73,25 +75,27 @@ const Trivia = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     textAlign: 'center',
-    backgroundColor: colors.primaryColor,
+    backgroundColor: colors.white,
     flex: 1,
   },
   content: {
-    marginHorizontal: 50,
+    marginHorizontal: 20,
     alignContent: 'center',
     marginVertical: 20,
   },
   title: {
-    color: 'white',
+    color: colors.primaryColor,
     textAlign: 'center',
+    fontSize: 30,
+    fontWeight: 'bold',
   },
   submit: {
-    height: 50,
-    borderWidth: 1,
+    height: 75,
+    borderWidth: 3,
     borderRadius: 15,
-    borderColor: 'white',
+    borderColor: colors.primaryColor,
     justifyContent: 'center',
-    marginTop: '15%',
+    marginTop: '10%',
   },
 });
 

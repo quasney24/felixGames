@@ -7,6 +7,7 @@
       "consts": ["consts"],
       "constex": ["constex"],
       "screens": ["screens"],
+      "stacks": ["stacks"],
     }
   }
 }
