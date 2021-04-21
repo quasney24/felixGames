@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Button, Overlay } from 'react-native-elements';
+import colors from 'consts/colors';
 
-const Modal = () => {
+const Modal = ({ text, buttonText, next }) => {
   const [visible, setVisible] = useState(true);
 
   const toggleOverlay = () => {
@@ -11,12 +12,41 @@ const Modal = () => {
 
   return (
     <View>
-      <Overlay isVisible={visible} onBackdropPress={toggleOverlay}>
-        <Text>Hello from Overlay!</Text>
-        <Button title="Open Overlay" onPress={toggleOverlay} />
+      <Overlay
+        overlayStyle={styles.modal}
+        isVisible={visible}
+        onBackdropPress={() => {
+          toggleOverlay();
+          next();
+        }}>
+        <Text style={styles.header}>{text}</Text>
+        <Button
+          buttonStyle={styles.button}
+          title={buttonText}
+          onPress={() => {
+            toggleOverlay();
+            next();
+          }}
+        />
       </Overlay>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  header: {
+    textAlign: 'center',
+    fontSize: 30,
+    padding: '2%',
+  },
+  button: {
+    backgroundColor: colors.primaryColor,
+  },
+  modal: {
+    opacity: 0.95,
+    width: '90%',
+    marginBottom: '100%',
+  },
+});
 
 export default Modal;

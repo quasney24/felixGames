@@ -31,12 +31,7 @@ const TriviaQ = () => {
 
   return (
     <View style={styles.container}>
-      <TriviaQuestions
-        question={triviaData[0].question}
-        category={triviaData[0].category}
-        all={triviaData[0].all}
-        correctAnswer={triviaData[0].correct_answer}
-      />
+      <TriviaQuestions data={triviaData} />
     </View>
   );
 };
