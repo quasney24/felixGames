@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
-  Alert,
   Dimensions,
   SafeAreaView,
   ScrollView,
@@ -9,44 +8,34 @@ import {
   View,
 } from 'react-native';
 import { Button, Input } from 'react-native-elements';
-import * as firebase from 'firebase';
 import 'firebase/firestore';
 
 import { AppContext } from 'context';
 import colors from 'consts/colors';
+import { ActivityIndicator } from 'react-native';
 
 export default function Login({ navigation }) {
+  const [isRegistering, setIsRegistering] = useState();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { user } = useContext(AppContext);
-
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
-
-  async function signIn(email, password) {
-    try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
-      Alert.alert('Logged in');
-    } catch (err) {
-      Alert.alert('There is something wrong!', err.message);
-    }
-  }
-
-  async function signOut() {
-    try {
-      await firebase.auth().signOut();
-      Alert.alert('Logged out');
-    } catch (err) {
-      Alert.alert('There is something wrong!', err.message);
-    }
-  }
+  const { user, loading, loginUser, logoutUser, resetPassword } = useContext(
+    AppContext,
+  );
 
   return (
     <>
       <SafeAreaView>
         <ScrollView contentContainerStyle={styles.container}>
+          {loading && (
+            <View style={styles.keyboardAvoider}>
+              <ActivityIndicator
+                size="large"
+                color={colors.accentText}
+                style={styles.loadingIndicator}
+              />
+            </View>
+          )}
           {!user && (
             <View style={styles.loginForm}>
               <Input
@@ -64,11 +53,39 @@ export default function Login({ navigation }) {
                 secureTextEntry={true}
               />
               <View style={styles.buttonContainer}>
-                <Button
-                  title="Login"
-                  onPress={() => signIn(email, password)}
-                  buttonStyle={{ backgroundColor: colors.lightAccent }}
-                />
+                <View style={{ marginBottom: 20 }}>
+                  <Button
+                    buttonStyle={{
+                      backgroundColor: colors.primaryColor,
+                    }}
+                    textAlign="center"
+                    title={isRegistering ? 'Register' : 'Login'}
+                    onPress={() => {
+                      if (isRegistering) {
+                        // signup
+                      }
+                      loginUser(email, password);
+                    }}
+                  />
+                </View>
+                <View style={{ marginBottom: 20 }}>
+                  <Button
+                    textAlign="center"
+                    title={isRegistering ? 'Back to Login' : 'Register'}
+                    onPress={() => setIsRegistering(!isRegistering)}
+                    type="clear"
+                    titleStyle={{ color: colors.primaryColor }}
+                  />
+                </View>
+                {!isRegistering && (
+                  <Button
+                    type="clear"
+                    titleStyle={{ color: colors.primaryColor }}
+                    textAlign="center"
+                    title="Forgot Password?"
+                    onPress={() => resetPassword(email)}
+                  />
+                )}
               </View>
             </View>
           )}
@@ -78,7 +95,7 @@ export default function Login({ navigation }) {
               <View style={styles.buttonContainer}>
                 <Button
                   title="Logout"
-                  onPress={() => signOut()}
+                  onPress={() => logoutUser()}
                   buttonStyle={{ backgroundColor: colors.lightAccent }}
                 />
               </View>
@@ -121,6 +138,5 @@ const styles = StyleSheet.create({
     width: '50%',
     marginTop: 20,
     alignSelf: 'center',
-    backgroundColor: colors.primaryColor,
   },
 });

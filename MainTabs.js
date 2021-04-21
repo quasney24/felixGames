@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import HomeStack from 'stacks/HomeStack';
 import ProfileStack from 'stacks/ProfileStack';
@@ -16,11 +16,17 @@ export default function MainTabs() {
         tabBarIcon: ({ focused, color, size }) => {
           switch (route.name) {
             case HOME_TAB:
-              return <Ionicons name="md-home-sharp" size={24} color={color} />;
+              return (
+                <MaterialCommunityIcons name="home" size={size} color={color} />
+              );
             case PROFILE_TAB:
-              return <FontAwesome name="user" size={24} color={color} />;
+              return (
+                <MaterialCommunityIcons name="face" size={size} color={color} />
+              );
             default:
-              return <FontAwesome name="user" size={24} color={color} />;
+              return (
+                <MaterialCommunityIcons name="face" size={size} color={color} />
+              );
           }
         },
       })}
