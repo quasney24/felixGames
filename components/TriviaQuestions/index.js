@@ -31,14 +31,14 @@ const TriviaQuestions = ({ data }) => {
   const handleCorrectResult = () => {
     return (
       <View>
-        <EvilIcon size="20" name="check" color={colors.primaryColor} />
+        <EvilIcon size={20} name="check" color={colors.primaryColor} />
       </View>
     );
   };
   const handleIncorrectResult = () => {
     return (
       <>
-        <EvilIcon size="20" name="close-o" color={colors.incorrect} />
+        <EvilIcon size={20} name="close-o" color={colors.incorrect} />
       </>
     );
   };

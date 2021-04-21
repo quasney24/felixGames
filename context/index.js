@@ -42,7 +42,6 @@ export const AppContextProvider = (props) => {
       );
     };
     getToken();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getTriviaData = async (id, difficulty) => {
