@@ -4,8 +4,6 @@ import Axios from 'axios';
 export const AppContext = createContext();
 
 export const AppContextProvider = (props) => {
-  console.log('hello from appContext');
-
   const [categoryData, setCategoryData] = useState([]);
   const [triviaData, setTriviaData] = useState([]);
   const [id, setId] = useState();
@@ -48,7 +46,6 @@ export const AppContextProvider = (props) => {
     Axios.get(
       `https://opentdb.com/api.php?amount=1&encode=base64&category=${id}&difficulty=${difficulty}&token=${token}`,
     ).then((res) => {
-      console.log('from Context', res);
       setId(id);
       setDifficulty(difficulty);
       setTriviaData(res.data.results);
