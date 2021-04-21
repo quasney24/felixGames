@@ -38,7 +38,7 @@ const TriviaQuestions = ({ data }) => {
   const handleIncorrectResult = () => {
     return (
       <>
-        <EvilIcon size="20" name="close-o" color="red" />
+        <EvilIcon size="20" name="close-o" color={colors.incorrect} />
       </>
     );
   };
