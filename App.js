@@ -2,13 +2,13 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AppContextProvider } from 'context';
 
-import HomeStack from 'stacks/HomeStack';
+import MainTabs from 'MainTabs';
 
 export default function App() {
   return (
     <AppContextProvider>
       <NavigationContainer>
-        <HomeStack />
+        <MainTabs />
       </NavigationContainer>
     </AppContextProvider>
   );
