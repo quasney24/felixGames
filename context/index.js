@@ -1,9 +1,14 @@
 import React, { createContext, useState, useEffect } from 'react';
 import Axios from 'axios';
+import 'firebase/firestore';
 
 export const AppContext = createContext();
 
 export const AppContextProvider = (props) => {
+  console.log('hello from appContext');
+
+  const [authInitializing, setAuthInitializing] = useState();
+  const [user, setUser] = useState({});
   const [categoryData, setCategoryData] = useState([]);
   const [triviaData, setTriviaData] = useState([]);
   const [id, setId] = useState();
@@ -55,6 +60,10 @@ export const AppContextProvider = (props) => {
   return (
     <AppContext.Provider
       value={{
+        authInitializing,
+        setAuthInitializing,
+        user,
+        setUser,
         getAllCategoryData,
         categoryData,
         getTriviaData,
