@@ -32,7 +32,7 @@ export default function Login({}) {
   const [usernameTouched, setUsernameTouched] = useState(false);
   const [usernameValid, setUsernameValid] = useState(false);
   const usernameOpacity = useRef(new Animated.Value(0)).current;
-  const { user } = useContext(AppContext);
+  const { authInitializing, user } = useContext(AppContext);
 
   useEffect(() => {
     Animated.timing(usernameOpacity, {
@@ -115,15 +115,6 @@ export default function Login({}) {
   return (
     <SafeAreaView>
       <ScrollView contentContainerStyle={styles.container}>
-        {loading && (
-          <View style={styles.keyboardAvoider}>
-            <ActivityIndicator
-              size="large"
-              color={colors.accentText}
-              style={styles.loadingIndicator}
-            />
-          </View>
-        )}
         {!user && (
           <View style={styles.loginForm}>
             <>
@@ -173,7 +164,7 @@ export default function Login({}) {
                     rightIcon={
                       usernameValid
                         ? { name: 'done', color: 'green' }
-                        : { name: 'clear', color: colors.accentText }
+                        : { name: 'clear', color: 'red' }
                     }
                   />
                 )}
@@ -208,48 +199,59 @@ export default function Login({}) {
                   secureTextEntry
                 />
               </Animated.View>
-              <View style={styles.buttonContainer}>
-                <Button
-                  buttonStyle={{
-                    backgroundColor: colors.primaryColor,
-                  }}
-                  textAlign="center"
-                  title={isRegistering ? 'Register' : 'Login'}
-                  onPress={async () => {
-                    if (isRegistering) {
-                      return handleRegisteration();
-                    }
-                    setLoading(true);
-                    await loginUser(email, password);
-                    setPassword('');
-                    setLoading(false);
-                  }}
-                />
-                <View style={styles.smallMarginTop}>
+              {!loading && !authInitializing && (
+                <View style={styles.buttonContainer}>
                   <Button
+                    buttonStyle={{
+                      backgroundColor: colors.primaryColor,
+                    }}
                     textAlign="center"
-                    title={isRegistering ? 'Back to Login' : 'Register'}
-                    onPress={() => setIsRegistering(!isRegistering)}
-                    type="clear"
-                    titleStyle={{ color: colors.primaryColor }}
+                    title={isRegistering ? 'Register' : 'Login'}
+                    onPress={async () => {
+                      if (isRegistering) {
+                        return handleRegisteration();
+                      }
+                      setLoading(true);
+                      await loginUser(email, password);
+                      setPassword('');
+                      setLoading(false);
+                    }}
                   />
-                </View>
-                {!isRegistering && (
                   <View style={styles.smallMarginTop}>
                     <Button
+                      textAlign="center"
+                      title={isRegistering ? 'Back to Login' : 'Register'}
+                      onPress={() => setIsRegistering(!isRegistering)}
                       type="clear"
                       titleStyle={{ color: colors.primaryColor }}
-                      textAlign="center"
-                      title="Forgot Password?"
-                      onPress={async () => {
-                        setLoading(true);
-                        await forgotPassword(email);
-                        setLoading(false);
-                      }}
                     />
                   </View>
-                )}
-              </View>
+                  {!isRegistering && (
+                    <View style={styles.smallMarginTop}>
+                      <Button
+                        type="clear"
+                        titleStyle={{ color: colors.primaryColor }}
+                        textAlign="center"
+                        title="Forgot Password?"
+                        onPress={async () => {
+                          setLoading(true);
+                          await forgotPassword(email);
+                          setLoading(false);
+                        }}
+                      />
+                    </View>
+                  )}
+                </View>
+              )}
+              {(loading || authInitializing) && (
+                <View>
+                  <ActivityIndicator
+                    size="large"
+                    color={colors.primaryColor}
+                    style={styles.loadingIndicator}
+                  />
+                </View>
+              )}
             </>
           </View>
         )}

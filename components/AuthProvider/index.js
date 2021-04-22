@@ -5,13 +5,14 @@ import 'firebase/firestore';
 import { AppContext } from 'context';
 
 export default function AuthProvider({ children }) {
-  const { setUser } = useContext(AppContext);
+  const { setAuthInitializing, setUser } = useContext(AppContext);
 
   useEffect(() => {
-    const onAuthStateChanged = (loggedInUser) => {
+    const onAuthStateChanged = async (loggedInUser) => {
       if (loggedInUser) {
         // user logging in
-        firebase
+        setAuthInitializing(true);
+        await firebase
           .firestore()
           .collection('users')
           .where('uid', '==', loggedInUser.uid)
@@ -27,6 +28,7 @@ export default function AuthProvider({ children }) {
               }
             });
           });
+        setAuthInitializing(false);
       } else {
         // user logging out
         setUser(null);
@@ -34,6 +36,6 @@ export default function AuthProvider({ children }) {
     };
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber; // unsubscribe on unmount
-  }, [setUser]);
+  }, [setAuthInitializing, setUser]);
   return children;
 }
