@@ -51,7 +51,6 @@ export const AppContextProvider = (props) => {
     Axios.get(
       `https://opentdb.com/api.php?amount=1&encode=base64&category=${id}&difficulty=${difficulty}&token=${token}`,
     ).then((res) => {
-      console.log('from Context', res);
       setId(id);
       setDifficulty(difficulty);
       setTriviaData(res.data.results);

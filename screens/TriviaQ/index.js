@@ -5,7 +5,7 @@ import { AppContext } from 'context';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 
-const TriviaQ = () => {
+const TriviaQ = ({ navigation }) => {
   const { triviaData } = useContext(AppContext);
 
   function shuffleArray(array) {
@@ -31,7 +31,7 @@ const TriviaQ = () => {
 
   return (
     <View style={styles.container}>
-      <TriviaQuestions data={triviaData} />
+      <TriviaQuestions data={triviaData} completed={navigation} />
     </View>
   );
 };

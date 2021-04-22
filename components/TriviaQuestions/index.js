@@ -8,7 +8,7 @@ import { AppContext } from 'context';
 import Modal from '../Modal';
 import colors from 'consts/colors';
 
-const TriviaQuestions = ({ data }) => {
+const TriviaQuestions = ({ data, completed }) => {
   const { getTriviaData, id, difficulty } = useContext(AppContext);
 
   const [counter, setCounter] = useState(1);
@@ -92,6 +92,8 @@ const TriviaQuestions = ({ data }) => {
           buttonText={'Next'}
           text={selected === correct ? 'NICE!' : 'WHOOPS!'}
           next={nextQuestion}
+          counter={counter}
+          nav={completed}
         />
       ) : null}
     </View>

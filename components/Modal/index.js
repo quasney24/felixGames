@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Button, Overlay } from 'react-native-elements';
 import colors from 'consts/colors';
+import { HOME_SCREEN } from 'screens/routes';
 
-const Modal = ({ text, buttonText, next }) => {
+const Modal = ({ text, buttonText, next, counter, nav }) => {
   const [visible, setVisible] = useState(true);
 
   const toggleOverlay = () => {
@@ -24,7 +25,7 @@ const Modal = ({ text, buttonText, next }) => {
           buttonStyle={styles.button}
           title={buttonText}
           onPress={() => {
-            toggleOverlay();
+            counter > 9 ? nav.navigate(HOME_SCREEN) : toggleOverlay();
             next();
           }}
         />
