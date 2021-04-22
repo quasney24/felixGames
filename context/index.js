@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import Axios from 'axios';
 import 'firebase/firestore';
 
@@ -13,6 +13,7 @@ export const AppContextProvider = (props) => {
   const [triviaData, setTriviaData] = useState([]);
   const [id, setId] = useState();
   const [difficulty, setDifficulty] = useState();
+  const [token, setToken] = useState();
 
   const getAllCategoryData = async () => {
     Axios.get('https://opentdb.com/api_category.php').then(async (response) => {
@@ -26,9 +27,29 @@ export const AppContextProvider = (props) => {
     });
   };
 
+  //OpenDB Token so we do not get the same question twice, sessions are deleted after 6 hours
+  useEffect(() => {
+    const getToken = async () => {
+      Axios.get('https://opentdb.com/api_token.php?command=request').then(
+        (res) => {
+          if (res.data.response_code === 0) {
+            setToken(res.data.token);
+          } else {
+            Axios.get(
+              `https://opentdb.com/api_token.php?command=reset&token=${token}`,
+            ).then((response) => {
+              setToken(response.data.token);
+            });
+          }
+        },
+      );
+    };
+    getToken();
+  }, []);
+
   const getTriviaData = async (id, difficulty) => {
     Axios.get(
-      `https://opentdb.com/api.php?amount=1&encode=base64&category=${id}&difficulty=${difficulty}`,
+      `https://opentdb.com/api.php?amount=1&encode=base64&category=${id}&difficulty=${difficulty}&token=${token}`,
     ).then((res) => {
       console.log('from Context', res);
       setId(id);
