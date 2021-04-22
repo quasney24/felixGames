@@ -37,7 +37,7 @@ export default function MainTabs() {
         inactiveBackgroundColor: colors.primaryColor,
         activeBackgroundColor: colors.primaryColor,
         style: {
-          backgroundColor: colors.primaryBackground,
+          backgroundColor: colors.primaryColor,
           borderTopColor: colors.white,
         },
       }}>
