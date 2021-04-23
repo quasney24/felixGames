@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import Axios from 'axios';
 import 'firebase/firestore';
-import { shuffleArray } from 'functions/util';
+import { transformAPIData } from 'functions/quiz';
 
 export const AppContext = createContext();
 
@@ -69,12 +69,7 @@ export const AppContextProvider = (props) => {
           await getToken();
           return getTriviaData(catId, diff);
         }
-        res.data.results.forEach((e) => {
-          e.all = e.incorrect_answers.slice();
-          e.all.push(e.correct_answer);
-          shuffleArray(e.all);
-        });
-        setTriviaData(res.data.results);
+        setTriviaData(transformAPIData(res.data.results));
       })
       .catch((err) => {
         console.log(err);

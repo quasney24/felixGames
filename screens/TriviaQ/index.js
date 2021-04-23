@@ -5,32 +5,41 @@ import { AppContext } from 'context';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 import { HOME_SCREEN } from 'screens/routes';
+import { saveQuizResults } from 'functions/quiz';
 
 const TriviaQ = ({ navigation }) => {
   const { triviaData } = useContext(AppContext);
   const [counter, setCounter] = useState(1);
-  const [currentQuestion, setCurrentQuestion] = useState(triviaData[0]);
+  const [currentQuestion, setCurrentQuestion] = useState(
+    triviaData.questions[0],
+  );
   const [results, setResults] = useState([]);
 
-  const handleNext = (selected) => {
+  const handleNext = (selected, result) => {
     const question = currentQuestion;
-    currentQuestion.selected = selected;
-    setResults((prevState) => {
-      return {
-        ...prevState,
-        question,
-      };
-    });
+    currentQuestion.selectedAnswer = selected;
+    currentQuestion.answeredCorrect = result;
+
     if (counter === 10) {
+      saveQuizResults({
+        category: triviaData.category,
+        difficulty: triviaData.difficulty,
+        questions: [...results, question],
+      });
       return navigation.navigate(HOME_SCREEN);
     }
-    setCurrentQuestion(triviaData[counter]);
+
+    setResults((prevState) => {
+      return [...prevState, question];
+    });
+    setCurrentQuestion(triviaData.questions[counter]);
     setCounter(counter + 1);
   };
 
   return (
     <View style={styles.container}>
       <TriviaQuestions
+        category={triviaData.category}
         currentQuestion={currentQuestion}
         counter={counter}
         handleNext={handleNext}
