@@ -1,31 +1,14 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import base64 from 'react-native-base64';
-import { Text } from 'react-native-elements';
+import { Button, Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
-import Modal from '../Modal';
 import colors from 'consts/colors';
 
-const TriviaQuestions = ({ data, completed }) => {
-  const [counter, setCounter] = useState(1);
-  const [currentQuestion, setCurrentQuestion] = useState(data[0]);
+const TriviaQuestions = ({ currentQuestion, counter, handleNext }) => {
   const [selected, setSelected] = useState('');
   const [clicked, setClicked] = useState(false);
-  const [correct, setCorrect] = useState();
-
-  const handleClick = (d, i) => {
-    setCorrect();
-    setSelected(d);
-    setClicked(true);
-  };
-
-  const nextQuestion = () => {
-    setClicked(false);
-    setSelected('');
-    setCurrentQuestion(data[counter]);
-    setCounter(counter + 1);
-  };
 
   const handleCorrectResult = () => {
     return (
@@ -65,8 +48,8 @@ const TriviaQuestions = ({ data, completed }) => {
                 key={d}
                 style={styles.contentWrapper}
                 onPress={() => {
-                  handleClick(d, i);
-                  setCorrect(currentQuestion.correct_answer);
+                  setSelected(d);
+                  setClicked(true);
                 }}>
                 <View style={styles.icon}>
                   {clicked && d === currentQuestion.correct_answer
@@ -81,18 +64,18 @@ const TriviaQuestions = ({ data, completed }) => {
               </TouchableOpacity>
             );
           })}
+          <View style={styles.buttonContainer}>
+            <Button
+              disabled={!clicked}
+              title="Next"
+              onPress={() => {
+                handleNext(selected);
+                setClicked(false);
+              }}
+            />
+          </View>
         </View>
       )}
-
-      {clicked ? (
-        <Modal
-          buttonText={'Next'}
-          text={selected === correct ? 'NICE!' : 'WHOOPS!'}
-          next={nextQuestion}
-          counter={counter}
-          nav={completed}
-        />
-      ) : null}
     </View>
   );
 };
@@ -125,10 +108,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   icon: {
-    flex: 0,
+    top: '100%',
+    left: 20,
+    position: 'absolute',
   },
   textBox: {
     flex: 10,
+  },
+  buttonContainer: {
+    width: '60%',
+    marginVertical: 5,
+    alignSelf: 'center',
   },
 });
 export default TriviaQuestions;

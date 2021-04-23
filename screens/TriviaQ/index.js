@@ -1,36 +1,40 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { AppContext } from 'context';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
+import { HOME_SCREEN } from 'screens/routes';
 
 const TriviaQ = ({ navigation }) => {
   const { triviaData } = useContext(AppContext);
+  const [counter, setCounter] = useState(1);
+  const [currentQuestion, setCurrentQuestion] = useState(triviaData[0]);
+  const [results, setResults] = useState([]);
 
-  function shuffleArray(array) {
-    let i = array.length - 1;
-    for (; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = array[i];
-      array[i] = array[j];
-      array[j] = temp;
-    }
-    return array;
-  }
-
-  function dataHelper() {
-    triviaData.forEach((e) => {
-      e.all = e.incorrect_answers.slice();
-      e.all.push(e.correct_answer);
-      shuffleArray(e.all);
+  const handleNext = (selected) => {
+    const question = currentQuestion;
+    currentQuestion.selected = selected;
+    setResults((prevState) => {
+      return {
+        ...prevState,
+        question,
+      };
     });
-  }
-  dataHelper();
+    if (counter === 10) {
+      return navigation.navigate(HOME_SCREEN);
+    }
+    setCurrentQuestion(triviaData[counter]);
+    setCounter(counter + 1);
+  };
 
   return (
     <View style={styles.container}>
-      <TriviaQuestions data={triviaData} completed={navigation} />
+      <TriviaQuestions
+        currentQuestion={currentQuestion}
+        counter={counter}
+        handleNext={handleNext}
+      />
     </View>
   );
 };
