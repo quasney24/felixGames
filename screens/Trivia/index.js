@@ -1,5 +1,11 @@
-import React, { useState, useContext } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import {
+  ActivityIndicator,
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { HeaderBackButton } from '@react-navigation/stack';
 import { Text } from 'react-native-elements';
 
@@ -10,23 +16,32 @@ import { TRIVIAQ_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
-  const { categoryData, getTriviaData } = useContext(AppContext);
+  const { categoryData, getAllCategoryData, getTriviaData } = useContext(
+    AppContext,
+  );
 
   const [difficulty, setDifficulty] = useState('');
   const [categoryId, setCategoryId] = useState();
+  const [loading, setLoading] = useState(false);
   const [phaseTwo, setPhaseTwo] = useState(false);
 
-  const getCategoryId = (value) => {
-    console.log(value);
-    setCategoryId(value);
-    setPhaseTwo(true);
+  useEffect(() => {
+    getCategories();
+  }, [categoryData]);
+
+  const getCategories = async () => {
+    if (categoryData.length === 0) {
+      setLoading(true);
+      await getAllCategoryData();
+      setLoading(false);
+    }
   };
-  const getDifficulty = (value) => {
-    console.log(value);
-    setDifficulty(value);
-  };
-  const handleSubmit = () => {
-    getTriviaData(categoryId, difficulty);
+
+  const handleSubmit = async () => {
+    console.log(categoryId, difficulty);
+    setLoading(true);
+    await getTriviaData(categoryId, difficulty);
+    setLoading(false);
     navigation.navigate(TRIVIAQ_SCREEN);
   };
 
@@ -53,7 +68,10 @@ const Trivia = ({ navigation }) => {
           <Text style={styles.title}>Select a Category</Text>
           <Category
             data={categoryData}
-            getId={(value) => getCategoryId(value)}
+            getId={(value) => {
+              setCategoryId(value);
+              setPhaseTwo(true);
+            }}
           />
         </View>
       ) : (
@@ -61,11 +79,18 @@ const Trivia = ({ navigation }) => {
           <Text style={styles.title}>Select a Difficulty</Text>
           <Difficulty
             diff={difficulty}
-            setDiff={(value) => getDifficulty(value)}
+            setDiff={(value) => setDifficulty(value)}
           />
-          <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
-            <Text style={styles.title}>start</Text>
-          </TouchableOpacity>
+          {!loading && (
+            <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
+              <Text style={styles.title}>start</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+      {loading && (
+        <View style={styles.loadingSpinner}>
+          <ActivityIndicator size="large" color={colors.primaryColor} />
         </View>
       )}
     </ScrollView>
@@ -94,6 +119,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 15,
     borderColor: colors.primaryColor,
+    justifyContent: 'center',
+    marginTop: '10%',
+  },
+  loadingSpinner: {
+    height: 75,
     justifyContent: 'center',
     marginTop: '10%',
   },

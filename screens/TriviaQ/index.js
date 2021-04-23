@@ -21,7 +21,6 @@ const TriviaQ = ({ navigation }) => {
 
   function dataHelper() {
     triviaData.forEach((e) => {
-      console.log('data helper', e);
       e.all = e.incorrect_answers.slice();
       e.all.push(e.correct_answer);
       shuffleArray(e.all);

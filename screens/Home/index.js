@@ -1,18 +1,11 @@
-import React, { useEffect, useContext } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
-import { AppContext } from 'context';
 import { TRIVIA_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Home = ({ navigation }) => {
-  const { getAllCategoryData } = useContext(AppContext);
-
-  useEffect(() => {
-    getAllCategoryData();
-  }, []);
-
   //@TODO refactor app to build factory pattern style utilizing classes for game types
   const triviaOptions = [
     {

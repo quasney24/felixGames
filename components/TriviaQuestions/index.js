@@ -1,17 +1,15 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import base64 from 'react-native-base64';
 import { Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
-import { AppContext } from 'context';
 import Modal from '../Modal';
 import colors from 'consts/colors';
 
 const TriviaQuestions = ({ data, completed }) => {
-  const { getTriviaData, id, difficulty } = useContext(AppContext);
-
   const [counter, setCounter] = useState(1);
+  const [currentQuestion, setCurrentQuestion] = useState(data[0]);
   const [selected, setSelected] = useState('');
   const [clicked, setClicked] = useState(false);
   const [correct, setCorrect] = useState();
@@ -25,9 +23,10 @@ const TriviaQuestions = ({ data, completed }) => {
   const nextQuestion = () => {
     setClicked(false);
     setSelected('');
-    getTriviaData(id, difficulty);
+    setCurrentQuestion(data[counter]);
     setCounter(counter + 1);
   };
+
   const handleCorrectResult = () => {
     return (
       <View>
@@ -45,47 +44,45 @@ const TriviaQuestions = ({ data, completed }) => {
 
   return (
     <View style={styles.base}>
-      {data.map((e, index) => {
-        return (
-          <View style={styles.container} key={e.question}>
-            <View>
-              <Text style={styles.headerText} h3>
-                {base64.decode(e.category)}
-              </Text>
-              <Text h3 style={styles.headerText}>
-                {counter} out of 10
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.headerText} h4>
-                {base64.decode(e.question)}
-              </Text>
-            </View>
-            {e.all.map((d, i) => {
-              return (
-                <TouchableOpacity
-                  key={d}
-                  style={styles.contentWrapper}
-                  onPress={() => {
-                    handleClick(d, i);
-                    setCorrect(e.correct_answer);
-                  }}>
-                  <View style={styles.icon}>
-                    {clicked && d === e.correct_answer
-                      ? handleCorrectResult(d, i)
-                      : clicked && d === selected
-                      ? handleIncorrectResult(d, i)
-                      : null}
-                  </View>
-                  <View style={styles.textBox}>
-                    <Text style={styles.text}>{base64.decode(d)}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+      {currentQuestion && (
+        <View style={styles.container} key={currentQuestion.question}>
+          <View>
+            <Text style={styles.headerText} h3>
+              {base64.decode(currentQuestion.category)}
+            </Text>
+            <Text h3 style={styles.headerText}>
+              {counter} out of 10
+            </Text>
           </View>
-        );
-      })}
+          <View>
+            <Text style={styles.headerText} h4>
+              {base64.decode(currentQuestion.question)}
+            </Text>
+          </View>
+          {currentQuestion.all.map((d, i) => {
+            return (
+              <TouchableOpacity
+                key={d}
+                style={styles.contentWrapper}
+                onPress={() => {
+                  handleClick(d, i);
+                  setCorrect(currentQuestion.correct_answer);
+                }}>
+                <View style={styles.icon}>
+                  {clicked && d === currentQuestion.correct_answer
+                    ? handleCorrectResult(d, i)
+                    : clicked && d === selected
+                    ? handleIncorrectResult(d, i)
+                    : null}
+                </View>
+                <View style={styles.textBox}>
+                  <Text style={styles.text}>{base64.decode(d)}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       {clicked ? (
         <Modal
