@@ -5,37 +5,42 @@ import { shuffleArray } from './util';
 
 export const transformAPIData = (data) => {
   const transformedData = { questions: [] };
+
+  // put category and difficulty into own properties
   transformedData.category = base64
     .decode(data[0].category)
     .replace('Entertainment: ', '')
     .replace('Science: ', '');
-
   transformedData.difficulty = base64.decode(data[0].difficulty);
 
-  data.forEach((e) => {
+  data.forEach((q) => {
+    //decode data, rename properties for consistencty
+    q.question = base64.decode(q.question);
+    q.type = base64.decode(q.type);
     const incorrectAnswers = [];
-    e.incorrect_answers.forEach((i) => {
+    q.incorrect_answers.forEach((i) => {
       incorrectAnswers.push(base64.decode(i));
     });
-    e.incorrectAnswers = incorrectAnswers;
-    e.correctAnswer = base64.decode(e.correct_answer);
-    e.question = base64.decode(e.question);
-    e.type = base64.decode(e.type);
+    q.incorrectAnswers = incorrectAnswers;
+    q.correctAnswer = base64.decode(q.correct_answer);
+    delete q.incorrect_answers;
+    delete q.correct_answer;
 
-    delete e.incorrect_answers;
-    delete e.correct_answer;
-    delete e.category;
-    delete e.difficulty;
+    // delete category and difficulty properties (stored on top level)
+    delete q.category;
+    delete q.difficulty;
 
-    e.all = e.incorrectAnswers.slice();
-    e.all.push(e.correctAnswer);
-    shuffleArray(e.all);
-    transformedData.questions.push(e);
+    // create array of answers, shuffle otherwise last answer is always correct
+    q.all = q.incorrectAnswers.slice();
+    q.all.push(q.correctAnswer);
+    shuffleArray(q.all);
+    transformedData.questions.push(q);
   });
   return transformedData;
 };
 
-export const saveQuizResults = async (results) => {
+export const saveQuizResults = async (results, user) => {
+  // calculate number correct and incorrect
   let correct = 0;
   let incorrect = 0;
   results.questions.forEach((q) => {
@@ -46,6 +51,7 @@ export const saveQuizResults = async (results) => {
   });
   results.correct = correct;
   results.incorrect = incorrect;
+  results.uid = user.uid;
 
   firebase
     .firestore()

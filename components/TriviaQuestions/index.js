@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button, Text } from 'react-native-elements';
+import { Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
 import colors from 'consts/colors';
@@ -22,6 +22,7 @@ const TriviaQuestions = ({
       </View>
     );
   };
+
   const handleIncorrectResult = () => {
     return (
       <>
@@ -34,16 +35,16 @@ const TriviaQuestions = ({
     <View style={styles.base}>
       {currentQuestion && (
         <View style={styles.container} key={currentQuestion.question}>
-          <View>
-            <Text style={styles.headerText} h3>
+          <View style={styles.headerContainer}>
+            <Text style={{ ...styles.text, ...styles.headerText }}>
               {category}
             </Text>
-            <Text h3 style={styles.headerText}>
+            <Text style={{ ...styles.text, ...styles.headerText }}>
               {counter} out of 10
             </Text>
           </View>
           <View>
-            <Text style={styles.headerText} h4>
+            <Text style={{ ...styles.text, ...styles.questionText }}>
               {currentQuestion.question}
             </Text>
           </View>
@@ -54,14 +55,11 @@ const TriviaQuestions = ({
                 style={styles.contentWrapper}
                 disabled={clicked}
                 onPress={() => {
-                  if (clicked) {
-                    return;
-                  }
+                  setClicked(true);
                   setSelected(d);
                   setCorrect(
                     d === currentQuestion.correctAnswer ? true : false,
                   );
-                  setClicked(true);
                 }}>
                 <View style={styles.icon}>
                   {clicked && d === currentQuestion.correctAnswer
@@ -71,21 +69,35 @@ const TriviaQuestions = ({
                     : null}
                 </View>
                 <View style={styles.textBox}>
-                  <Text style={styles.text}>{d}</Text>
+                  <Text style={{ ...styles.text, ...styles.buttonText }}>
+                    {d}
+                  </Text>
                 </View>
               </TouchableOpacity>
             );
           })}
-          <View style={styles.buttonContainer}>
-            <Button
-              disabled={!clicked}
-              title="Next"
-              onPress={() => {
-                handleNext(selected, correct);
-                setClicked(false);
-              }}
-            />
-          </View>
+          <TouchableOpacity
+            style={
+              !clicked
+                ? { ...styles.contentWrapper, ...styles.disabledButton }
+                : { ...styles.contentWrapper, ...styles.nextButton }
+            }
+            disabled={!clicked}
+            onPress={() => {
+              handleNext(selected, correct);
+              setClicked(false);
+            }}>
+            <View style={styles.textBox}>
+              <Text
+                style={
+                  !clicked
+                    ? { ...styles.text, ...styles.disabledText }
+                    : styles.text
+                }>
+                Next
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -95,11 +107,12 @@ const TriviaQuestions = ({
 const styles = StyleSheet.create({
   base: {
     flex: 1,
+    alignItems: 'center',
   },
   container: {
     flex: 1,
     justifyContent: 'space-evenly',
-    alignItems: 'center',
+    width: '90%',
   },
   contentWrapper: {
     textAlign: 'center',
@@ -107,17 +120,34 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderWidth: 1,
     padding: 20,
-    width: '90%',
     backgroundColor: 'white',
     justifyContent: 'center',
   },
+  nextButton: {
+    width: '50%',
+    alignSelf: 'center',
+    backgroundColor: colors.accentColor,
+    borderWidth: 0,
+  },
+  disabledButton: {
+    width: '50%',
+    alignSelf: 'center',
+    backgroundColor: colors.gray,
+    borderWidth: 0,
+  },
+  disabledText: {
+    color: colors.white,
+  },
   text: {
-    color: colors.primaryColor,
+    color: colors.white,
     textAlign: 'center',
+    fontWeight: 'bold',
   },
   headerText: {
-    color: 'white',
-    textAlign: 'center',
+    fontSize: 26,
+  },
+  questionText: {
+    fontSize: 22,
   },
   icon: {
     top: '100%',
@@ -128,9 +158,12 @@ const styles = StyleSheet.create({
     flex: 10,
   },
   buttonContainer: {
-    width: '60%',
-    marginVertical: 5,
+    width: '50%',
     alignSelf: 'center',
+  },
+  buttonText: {
+    color: colors.primaryColor,
+    textAlign: 'center',
   },
 });
 export default TriviaQuestions;

@@ -30,6 +30,7 @@ export const AppContextProvider = (props) => {
     );
   };
 
+  //OpenDB Token so we do not get the same question twice, sessions are deleted after 6 hours
   const getToken = async () => {
     if (token) {
       await Axios.get(
@@ -48,19 +49,17 @@ export const AppContextProvider = (props) => {
     }
   };
 
-  //OpenDB Token so we do not get the same question twice, sessions are deleted after 6 hours
   useEffect(() => {
     getToken();
   }, []);
 
   const getTriviaData = async (catId, diff) => {
-    console.log(token);
+    setCategoryId(catId);
+    setDifficulty(diff);
     await Axios.get(
       `https://opentdb.com/api.php?amount=10&encode=base64&category=${catId}&difficulty=${diff}&token=${token}`,
     )
       .then(async (res) => {
-        setCategoryId(catId);
-        setDifficulty(difficulty);
         if (res.data.response_code === 1) {
           // not enough questions, need to think how to handle?
           // seems to happen on celeb category on hard
@@ -69,7 +68,9 @@ export const AppContextProvider = (props) => {
           await getToken();
           return getTriviaData(catId, diff);
         }
-        setTriviaData(transformAPIData(res.data.results));
+        if (res.data.results.length === 10) {
+          setTriviaData(transformAPIData(res.data.results));
+        }
       })
       .catch((err) => {
         console.log(err);
