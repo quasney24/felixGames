@@ -4,11 +4,10 @@ import { View, StyleSheet } from 'react-native';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 import { AppContext } from 'context';
-import { HOME_SCREEN } from 'screens/routes';
-import { saveQuizResults } from 'functions/quiz';
+import { QUIZ_COMPLETED_SCREEN } from 'screens/routes';
 
 const TriviaQ = ({ navigation }) => {
-  const { triviaData, user } = useContext(AppContext);
+  const { triviaData } = useContext(AppContext);
   const [counter, setCounter] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(
     triviaData.questions[0],
@@ -21,17 +20,23 @@ const TriviaQ = ({ navigation }) => {
     currentQuestion.answeredCorrect = result;
 
     if (counter === 10) {
-      if (user) {
-        saveQuizResults(
-          {
-            category: triviaData.category,
-            difficulty: triviaData.difficulty,
-            questions: [...results, question],
-          },
-          user,
-        );
-      }
-      return navigation.navigate(HOME_SCREEN);
+      let correct = 0;
+      let incorrect = 0;
+      results.forEach((q) => {
+        if (q.answeredCorrect) {
+          return correct++;
+        }
+        incorrect++;
+      });
+      return navigation.navigate(QUIZ_COMPLETED_SCREEN, {
+        results: {
+          category: triviaData.category,
+          difficulty: triviaData.difficulty,
+          questions: [...results, question],
+          correct,
+          incorrect,
+        },
+      });
     }
 
     setResults((prevState) => {
