@@ -4,7 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 import { AppContext } from 'context';
-import { HOME_SCREEN } from 'screens/routes';
+import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 import { saveQuizResults } from 'functions/quiz';
 
 const TriviaQ = ({ navigation }) => {
@@ -13,7 +13,7 @@ const TriviaQ = ({ navigation }) => {
   const [currentQuestion, setCurrentQuestion] = useState(
     triviaData.questions[0],
   );
-  const [results, setResults] = useState([]);
+  const [questionResults, setQuestionResults] = useState([]);
 
   const handleNext = (selected, result) => {
     const question = currentQuestion;
@@ -21,20 +21,33 @@ const TriviaQ = ({ navigation }) => {
     currentQuestion.answeredCorrect = result;
 
     if (counter === 10) {
+      let correct = 0;
+      let incorrect = 0;
+      questionResults.forEach((q) => {
+        if (q.answeredCorrect) {
+          return correct++;
+        }
+        incorrect++;
+      });
+
+      const quizResults = {
+        category: triviaData.category,
+        difficulty: triviaData.difficulty,
+        questions: [...questionResults, question],
+        correct,
+        incorrect,
+        completed: Date.now(),
+      };
+
       if (user) {
-        saveQuizResults(
-          {
-            category: triviaData.category,
-            difficulty: triviaData.difficulty,
-            questions: [...results, question],
-          },
-          user,
-        );
+        quizResults.uid = user.uid;
+        saveQuizResults(quizResults);
       }
-      return navigation.navigate(HOME_SCREEN);
+
+      return navigation.navigate(QUIZ_RESULTS_SCREEN, { quizResults });
     }
 
-    setResults((prevState) => {
+    setQuestionResults((prevState) => {
       return [...prevState, question];
     });
     setCurrentQuestion(triviaData.questions[counter]);

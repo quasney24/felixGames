@@ -5,12 +5,12 @@ import defaultOptions from 'stacks/default-options';
 import Home from 'screens/Home';
 import Trivia from 'screens/Trivia';
 import TriviaQ from 'screens/TriviaQ';
-import Completed from 'screens/Completed';
+import QuizResults from 'screens/QuizResults';
 import {
   HOME_SCREEN,
   TRIVIA_SCREEN,
   TRIVIAQ_SCREEN,
-  COMPLETED_SCREEN,
+  QUIZ_RESULTS_SCREEN,
 } from 'screens/routes';
 
 const Stack = createStackNavigator();
@@ -43,11 +43,11 @@ export default function HomeStack() {
         }}
       />
       <Stack.Screen
-        name={COMPLETED_SCREEN}
-        component={Completed}
+        name={QUIZ_RESULTS_SCREEN}
+        component={QuizResults}
         options={{
           ...defaultOptions,
-          title: 'Completed',
+          title: 'Quiz Results',
         }}
       />
     </Stack.Navigator>
