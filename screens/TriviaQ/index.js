@@ -4,15 +4,16 @@ import { View, StyleSheet } from 'react-native';
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 import { AppContext } from 'context';
-import { QUIZ_COMPLETED_SCREEN } from 'screens/routes';
+import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
+import { saveQuizResults } from 'functions/quiz';
 
 const TriviaQ = ({ navigation }) => {
-  const { triviaData } = useContext(AppContext);
+  const { triviaData, user } = useContext(AppContext);
   const [counter, setCounter] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(
     triviaData.questions[0],
   );
-  const [results, setResults] = useState([]);
+  const [questionResults, setQuestionResults] = useState([]);
 
   const handleNext = (selected, result) => {
     const question = currentQuestion;
@@ -22,24 +23,31 @@ const TriviaQ = ({ navigation }) => {
     if (counter === 10) {
       let correct = 0;
       let incorrect = 0;
-      results.forEach((q) => {
+      questionResults.forEach((q) => {
         if (q.answeredCorrect) {
           return correct++;
         }
         incorrect++;
       });
-      return navigation.navigate(QUIZ_COMPLETED_SCREEN, {
-        results: {
-          category: triviaData.category,
-          difficulty: triviaData.difficulty,
-          questions: [...results, question],
-          correct,
-          incorrect,
-        },
-      });
+
+      const quizResults = {
+        category: triviaData.category,
+        difficulty: triviaData.difficulty,
+        questions: [...questionResults, question],
+        correct,
+        incorrect,
+        completed: Date.now(),
+      };
+
+      if (user) {
+        quizResults.uid = user.uid;
+        saveQuizResults(quizResults);
+      }
+
+      return navigation.navigate(QUIZ_RESULTS_SCREEN, { quizResults });
     }
 
-    setResults((prevState) => {
+    setQuestionResults((prevState) => {
       return [...prevState, question];
     });
     setCurrentQuestion(triviaData.questions[counter]);

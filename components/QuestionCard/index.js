@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-elements';
 import colors from 'consts/colors';
 
-const QuestionCard = ({ selectedAnswer, question }) => {
+const QuestionCard = ({ question }) => {
   return (
     <View style={styles.container}>
       <Card containerStyle={styles.cardContainer}>

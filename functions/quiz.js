@@ -39,20 +39,7 @@ export const transformAPIData = (data) => {
   return transformedData;
 };
 
-export const saveQuizResults = async (results, user) => {
-  // calculate number correct and incorrect
-  let correct = 0;
-  let incorrect = 0;
-  results.questions.forEach((q) => {
-    if (q.answeredCorrect) {
-      return correct++;
-    }
-    incorrect++;
-  });
-  results.correct = correct;
-  results.incorrect = incorrect;
-  results.uid = user.uid;
-
+export const saveQuizResults = async (results) => {
   firebase
     .firestore()
     .collection('quizResults')
