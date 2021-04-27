@@ -20,7 +20,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
-} from 'functions/Auth';
+} from 'functions/auth';
 
 export default function Login({}) {
   const [loading, setLoading] = useState();

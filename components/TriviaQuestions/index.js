@@ -1,33 +1,20 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import base64 from 'react-native-base64';
 import { Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
-import { AppContext } from 'context';
-import Modal from '../Modal';
 import colors from 'consts/colors';
 
-const TriviaQuestions = ({ data, completed }) => {
-  const { getTriviaData, id, difficulty } = useContext(AppContext);
-
-  const [counter, setCounter] = useState(1);
+const TriviaQuestions = ({
+  category,
+  currentQuestion,
+  counter,
+  handleNext,
+}) => {
   const [selected, setSelected] = useState('');
   const [clicked, setClicked] = useState(false);
-  const [correct, setCorrect] = useState();
+  const [correct, setCorrect] = useState(false);
 
-  const handleClick = (d, i) => {
-    setCorrect();
-    setSelected(d);
-    setClicked(true);
-  };
-
-  const nextQuestion = () => {
-    setClicked(false);
-    setSelected('');
-    getTriviaData(id, difficulty);
-    setCounter(counter + 1);
-  };
   const handleCorrectResult = () => {
     return (
       <View>
@@ -35,6 +22,7 @@ const TriviaQuestions = ({ data, completed }) => {
       </View>
     );
   };
+
   const handleIncorrectResult = () => {
     return (
       <>
@@ -45,57 +33,73 @@ const TriviaQuestions = ({ data, completed }) => {
 
   return (
     <View style={styles.base}>
-      {data.map((e, index) => {
-        return (
-          <View style={styles.container} key={e.question}>
-            <View>
-              <Text style={styles.headerText} h3>
-                {base64.decode(e.category)}
-              </Text>
-              <Text h3 style={styles.headerText}>
-                {counter} out of 10
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.headerText} h4>
-                {base64.decode(e.question)}
-              </Text>
-            </View>
-            {e.all.map((d, i) => {
-              return (
-                <TouchableOpacity
-                  key={d}
-                  style={styles.contentWrapper}
-                  onPress={() => {
-                    handleClick(d, i);
-                    setCorrect(e.correct_answer);
-                  }}>
-                  <View style={styles.icon}>
-                    {clicked && d === e.correct_answer
-                      ? handleCorrectResult(d, i)
-                      : clicked && d === selected
-                      ? handleIncorrectResult(d, i)
-                      : null}
-                  </View>
-                  <View style={styles.textBox}>
-                    <Text style={styles.text}>{base64.decode(d)}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+      {currentQuestion && (
+        <View style={styles.container} key={currentQuestion.question}>
+          <View style={styles.headerContainer}>
+            <Text style={{ ...styles.text, ...styles.headerText }}>
+              {category}
+            </Text>
+            <Text style={{ ...styles.text, ...styles.headerText }}>
+              {counter} out of 10
+            </Text>
           </View>
-        );
-      })}
-
-      {clicked ? (
-        <Modal
-          buttonText={'Next'}
-          text={selected === correct ? 'NICE!' : 'WHOOPS!'}
-          next={nextQuestion}
-          counter={counter}
-          nav={completed}
-        />
-      ) : null}
+          <View>
+            <Text style={{ ...styles.text, ...styles.questionText }}>
+              {currentQuestion.question}
+            </Text>
+          </View>
+          {currentQuestion.all.map((d, i) => {
+            return (
+              <TouchableOpacity
+                key={d}
+                style={styles.contentWrapper}
+                disabled={clicked}
+                onPress={() => {
+                  setClicked(true);
+                  setSelected(d);
+                  setCorrect(
+                    d === currentQuestion.correctAnswer ? true : false,
+                  );
+                }}>
+                <View style={styles.icon}>
+                  {clicked && d === currentQuestion.correctAnswer
+                    ? handleCorrectResult(d, i)
+                    : clicked && d === selected
+                    ? handleIncorrectResult(d, i)
+                    : null}
+                </View>
+                <View style={styles.textBox}>
+                  <Text style={{ ...styles.text, ...styles.buttonText }}>
+                    {d}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity
+            style={
+              !clicked
+                ? { ...styles.contentWrapper, ...styles.disabledButton }
+                : { ...styles.contentWrapper, ...styles.nextButton }
+            }
+            disabled={!clicked}
+            onPress={() => {
+              handleNext(selected, correct);
+              setClicked(false);
+            }}>
+            <View style={styles.textBox}>
+              <Text
+                style={
+                  !clicked
+                    ? { ...styles.text, ...styles.disabledText }
+                    : styles.text
+                }>
+                Next
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -103,11 +107,12 @@ const TriviaQuestions = ({ data, completed }) => {
 const styles = StyleSheet.create({
   base: {
     flex: 1,
+    alignItems: 'center',
   },
   container: {
     flex: 1,
     justifyContent: 'space-evenly',
-    alignItems: 'center',
+    width: '90%',
   },
   contentWrapper: {
     textAlign: 'center',
@@ -115,23 +120,50 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderWidth: 1,
     padding: 20,
-    width: '90%',
     backgroundColor: 'white',
     justifyContent: 'center',
   },
+  nextButton: {
+    width: '50%',
+    alignSelf: 'center',
+    backgroundColor: colors.accentColor,
+    borderWidth: 0,
+  },
+  disabledButton: {
+    width: '50%',
+    alignSelf: 'center',
+    backgroundColor: colors.gray,
+    borderWidth: 0,
+  },
+  disabledText: {
+    color: colors.white,
+  },
   text: {
-    color: colors.primaryColor,
+    color: colors.white,
     textAlign: 'center',
+    fontWeight: 'bold',
   },
   headerText: {
-    color: 'white',
-    textAlign: 'center',
+    fontSize: 26,
+  },
+  questionText: {
+    fontSize: 22,
   },
   icon: {
-    flex: 0,
+    top: '100%',
+    left: 20,
+    position: 'absolute',
   },
   textBox: {
     flex: 10,
+  },
+  buttonContainer: {
+    width: '50%',
+    alignSelf: 'center',
+  },
+  buttonText: {
+    color: colors.primaryColor,
+    textAlign: 'center',
   },
 });
 export default TriviaQuestions;
