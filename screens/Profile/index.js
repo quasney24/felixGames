@@ -7,6 +7,7 @@ import 'firebase/firestore';
 import colors from 'consts/colors';
 import { AppContext } from 'context';
 import { logoutUser } from 'functions/auth';
+import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 
 const Profile = ({ navigation }) => {
   const [loading, setLoading] = useState();
@@ -75,7 +76,11 @@ const Profile = ({ navigation }) => {
                 key={i}
                 bottomDivider
                 containerStyle={styles.profileListItem}
-                onPress={() => {}}>
+                onPress={() => {
+                  navigation.navigate(QUIZ_RESULTS_SCREEN, {
+                    quizResults: quiz,
+                  });
+                }}>
                 <ListItem.Content>
                   <ListItem.Title style={{ fontSize: 20 }}>
                     {quiz.category}
