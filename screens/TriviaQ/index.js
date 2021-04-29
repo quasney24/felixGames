@@ -1,12 +1,12 @@
 import React, { useContext, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
 import { AppContext } from 'context';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
-import { saveQuizResults } from 'functions/quiz';
+import { saveQuiz } from 'store/reducers/quizes';
 
 const TriviaQ = ({ navigation }) => {
   const { triviaData } = useContext(AppContext);
@@ -16,6 +16,7 @@ const TriviaQ = ({ navigation }) => {
     triviaData.questions[0],
   );
   const [questionResults, setQuestionResults] = useState([]);
+  const dispatch = useDispatch();
 
   const handleNext = (selected, result) => {
     const question = currentQuestion;
@@ -43,7 +44,7 @@ const TriviaQ = ({ navigation }) => {
 
       if (user) {
         quizResults.uid = user.uid;
-        saveQuizResults(quizResults);
+        dispatch(saveQuiz(quizResults));
       }
 
       return navigation.navigate(QUIZ_RESULTS_SCREEN, { quizResults });

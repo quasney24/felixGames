@@ -1,37 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Avatar, Button, ListItem } from 'react-native-elements';
-import { useSelector } from 'react-redux';
-import * as firebase from 'firebase';
+import { useDispatch, useSelector } from 'react-redux';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { logoutUser } from 'functions/auth';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
+import { logoutUser } from 'functions/auth';
+import { fetchQuizes } from 'store/reducers/quizes';
 
 const Profile = ({ navigation }) => {
   const [loading, setLoading] = useState();
-  const [userQuizes, setUserQuizes] = useState([]);
   const user = useSelector((state) => state.user.user);
+  const userQuizes = useSelector((state) => state.quizes.quizes);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    firebase
-      .firestore()
-      .collection('quizResults')
-      .where('uid', '==', user.uid)
-      .orderBy('completed', 'desc')
-      .get()
-      .then((querySnapshot) => {
-        const quizes = [];
-        querySnapshot.forEach((documentSnapshot) => {
-          quizes.push({
-            id: documentSnapshot.id,
-            ...documentSnapshot.data(),
-          });
-        });
-        setUserQuizes(quizes);
-      });
-  }, [setUserQuizes]);
+    dispatch(fetchQuizes());
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>

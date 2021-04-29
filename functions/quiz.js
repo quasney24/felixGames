@@ -1,5 +1,3 @@
-import * as firebase from 'firebase';
-import 'firebase/firestore';
 import base64 from 'react-native-base64';
 import { shuffleArray } from './util';
 
@@ -37,15 +35,4 @@ export const transformAPIData = (data) => {
     transformedData.questions.push(q);
   });
   return transformedData;
-};
-
-export const saveQuizResults = async (results) => {
-  firebase
-    .firestore()
-    .collection('quizResults')
-    .add(results)
-    .then(() => {})
-    .catch((e) => {
-      console.log(e);
-    });
 };
