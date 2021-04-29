@@ -1,18 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Avatar, Button, ListItem } from 'react-native-elements';
+import { useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { AppContext } from 'context';
 import { logoutUser } from 'functions/auth';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 
 const Profile = ({ navigation }) => {
   const [loading, setLoading] = useState();
   const [userQuizes, setUserQuizes] = useState([]);
-  const { user } = useContext(AppContext);
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
     firebase

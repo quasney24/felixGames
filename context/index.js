@@ -9,7 +9,6 @@ export const AppContextProvider = (props) => {
   console.log('hello from appContext');
 
   const [authInitializing, setAuthInitializing] = useState();
-  const [user, setUser] = useState({});
   const [categoryData, setCategoryData] = useState([]);
   const [triviaData, setTriviaData] = useState([]);
   const [categoryId, setCategoryId] = useState();
@@ -82,8 +81,6 @@ export const AppContextProvider = (props) => {
       value={{
         authInitializing,
         setAuthInitializing,
-        user,
-        setUser,
         getAllCategoryData,
         categoryData,
         getTriviaData,

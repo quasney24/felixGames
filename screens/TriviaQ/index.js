@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useSelector } from 'react-redux';
 
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
@@ -8,7 +9,8 @@ import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 import { saveQuizResults } from 'functions/quiz';
 
 const TriviaQ = ({ navigation }) => {
-  const { triviaData, user } = useContext(AppContext);
+  const { triviaData } = useContext(AppContext);
+  const user = useSelector((state) => state.user.user);
   const [counter, setCounter] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(
     triviaData.questions[0],
