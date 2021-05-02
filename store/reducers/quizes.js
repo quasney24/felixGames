@@ -62,10 +62,10 @@ export const saveQuiz = (results) => {
       .firestore()
       .collection('quizResults')
       .add(results)
-      .then((response) => {
+      .then((docRef) => {
         dispatch({
-          type: FETCH_QUIZES,
-          quiz: { id: response._documentPath._parts[1], quiz: results },
+          type: SAVE_QUIZ,
+          quiz: { id: docRef.id, ...results },
         });
       })
       .catch((e) => {

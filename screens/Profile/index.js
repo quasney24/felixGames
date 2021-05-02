@@ -8,6 +8,7 @@ import colors from 'consts/colors';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 import { logoutUser } from 'functions/auth';
 import { fetchQuizes } from 'store/reducers/quizes';
+import { getTimeAgo } from 'functions/util';
 
 const Profile = ({ navigation }) => {
   const [loading, setLoading] = useState();
@@ -72,12 +73,10 @@ const Profile = ({ navigation }) => {
                     {quiz.category}
                   </ListItem.Title>
                   <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {quiz.difficulty} &bull;{' '}
-                    {new Date(quiz.completed).getMonth() +
-                      '/' +
-                      new Date(quiz.completed).getDay() +
-                      '/' +
-                      new Date(quiz.completed).getFullYear()}
+                    {quiz.difficulty}
+                  </ListItem.Subtitle>
+                  <ListItem.Subtitle style={{ fontSize: 16 }}>
+                    {getTimeAgo(quiz.completed)}
                   </ListItem.Subtitle>
                 </ListItem.Content>
                 <ListItem.Content style={{ alignItems: 'flex-end' }}>
@@ -112,6 +111,7 @@ const Profile = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
+    flex: 1,
   },
   profileHeader: {
     marginVertical: 20,
