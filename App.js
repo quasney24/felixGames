@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { AppContextProvider } from 'context';
 import { Provider } from 'react-redux';
 import * as firebase from 'firebase';
 import apiKeys from './config/keys';
@@ -17,13 +16,11 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <AppContextProvider>
-        <AuthProvider>
-          <NavigationContainer>
-            <MainTabs />
-          </NavigationContainer>
-        </AuthProvider>
-      </AppContextProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <MainTabs />
+        </NavigationContainer>
+      </AuthProvider>
     </Provider>
   );
 }

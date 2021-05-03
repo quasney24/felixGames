@@ -1,15 +1,14 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TriviaQuestions from 'components/TriviaQuestions';
 import colors from 'consts/colors';
-import { AppContext } from 'context';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 import { saveQuiz } from 'store/reducers/quizes';
 
-const TriviaQ = ({ navigation }) => {
-  const { triviaData } = useContext(AppContext);
+const TriviaQ = ({ navigation, route }) => {
+  const { triviaData } = route.params;
   const user = useSelector((state) => state.user.user);
   const [counter, setCounter] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(
