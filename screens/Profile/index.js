@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Avatar, Button, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 import 'firebase/firestore';
@@ -11,9 +18,9 @@ import { fetchQuizes } from 'store/reducers/quizes';
 import { getTimeAgo } from 'functions/util';
 
 const Profile = ({ navigation }) => {
-  const [loading, setLoading] = useState();
   const user = useSelector((state) => state.user.user);
   const userQuizes = useSelector((state) => state.quizes.quizes);
+  const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -58,6 +65,11 @@ const Profile = ({ navigation }) => {
             </View>
           </View>
           <ScrollView>
+            {fetchingQuizes && (
+              <View style={styles.loadingSpinner}>
+                <ActivityIndicator size="large" color={colors.primaryColor} />
+              </View>
+            )}
             {userQuizes.map((quiz, i) => (
               <ListItem
                 key={i}

@@ -36,7 +36,7 @@ export const fetchQuizes = () => {
   return async (dispatch, getState) => {
     const { user } = getState();
     dispatch({ type: FETCH_STATUS, isFetching: true });
-    firebase
+    await firebase
       .firestore()
       .collection('quizResults')
       .where('uid', '==', user.user.uid)
