@@ -1,17 +1,19 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { AppContext } from 'context';
+import { setUser, setAuthInitializing } from 'store/reducers/user';
 
 export default function AuthProvider({ children }) {
-  const { setAuthInitializing, setUser } = useContext(AppContext);
+  const dispatch = useDispatch();
+  const authInitializing = useSelector((state) => state.user.authInitializing);
 
   useEffect(() => {
     const onAuthStateChanged = async (loggedInUser) => {
       if (loggedInUser) {
+        dispatch(setAuthInitializing(true));
         // user logging in
-        setAuthInitializing(true);
         await firebase
           .firestore()
           .collection('users')
@@ -21,21 +23,25 @@ export default function AuthProvider({ children }) {
           .then((querySnapshot) => {
             querySnapshot.forEach((documentSnapshot) => {
               if (documentSnapshot.exists) {
-                setUser({
-                  id: documentSnapshot.id,
-                  ...documentSnapshot.data(),
-                });
+                dispatch(
+                  setUser({
+                    id: documentSnapshot.id,
+                    ...documentSnapshot.data(),
+                  }),
+                );
               }
             });
+            if (authInitializing) {
+              dispatch(setAuthInitializing(false));
+            }
           });
-        setAuthInitializing(false);
       } else {
-        // user logging out
-        setUser(null);
+        // User is logging out
+        dispatch(setUser(null));
       }
     };
     const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber; // unsubscribe on unmount
-  }, [setAuthInitializing, setUser]);
+  }, []);
   return children;
 }

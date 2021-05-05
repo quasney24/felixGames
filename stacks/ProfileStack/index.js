@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useSelector } from 'react-redux';
 
-import { AppContext } from 'context';
 import defaultOptions from 'stacks/default-options';
 import {
   LOGIN_SCREEN,
@@ -15,7 +15,7 @@ import QuizResults from 'screens/QuizResults';
 const Stack = createStackNavigator();
 
 export default function ProfileStack() {
-  const { user } = useContext(AppContext);
+  const user = useSelector((state) => state.user.user);
   return (
     <Stack.Navigator>
       {user !== null ? (

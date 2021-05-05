@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native';
 import { Button, Input } from 'react-native-elements';
+import { useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
-import { AppContext } from 'context';
 import colors from 'consts/colors';
 import {
   forgotPassword,
@@ -32,7 +32,8 @@ export default function Login({}) {
   const [usernameTouched, setUsernameTouched] = useState(false);
   const [usernameValid, setUsernameValid] = useState(false);
   const usernameOpacity = useRef(new Animated.Value(0)).current;
-  const { authInitializing, user } = useContext(AppContext);
+  const user = useSelector((state) => state.user.user);
+  const authInitializing = useSelector((state) => state.user.authInitializing);
 
   useEffect(() => {
     Animated.timing(usernameOpacity, {

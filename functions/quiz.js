@@ -1,9 +1,32 @@
-import * as firebase from 'firebase';
-import 'firebase/firestore';
+import Axios from 'axios';
 import base64 from 'react-native-base64';
 import { shuffleArray } from './util';
 
-export const transformAPIData = (data) => {
+export const getTriviaData = async (catId, diff) => {
+  let triviaData;
+  await Axios.get('https://opentdb.com/api_token.php?command=request')
+    .then(async (res) => {
+      if (res.data.response_code === 0) {
+        await Axios.get(
+          `https://opentdb.com/api.php?amount=10&encode=base64&category=${catId}&difficulty=${diff}&token=${res.data.token}`,
+        )
+          .then(async (response) => {
+            if (response.data.results.length === 10) {
+              triviaData = transformAPIData(response.data.results);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  return triviaData;
+};
+
+const transformAPIData = (data) => {
   const transformedData = { questions: [] };
 
   // put category and difficulty into own properties
@@ -37,15 +60,4 @@ export const transformAPIData = (data) => {
     transformedData.questions.push(q);
   });
   return transformedData;
-};
-
-export const saveQuizResults = async (results) => {
-  firebase
-    .firestore()
-    .collection('quizResults')
-    .add(results)
-    .then(() => {})
-    .catch((e) => {
-      console.log(e);
-    });
 };

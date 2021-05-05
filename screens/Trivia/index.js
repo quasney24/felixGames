@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -8,41 +8,38 @@ import {
 } from 'react-native';
 import { HeaderBackButton } from '@react-navigation/stack';
 import { Text } from 'react-native-elements';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Category from 'components/Category';
 import Difficulty from 'components/Difficulty';
-import { AppContext } from 'context';
+import { getTriviaData } from 'functions/quiz';
+import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import { TRIVIAQ_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
-  const { categoryData, getAllCategoryData, getTriviaData } = useContext(
-    AppContext,
-  );
-
   const [difficulty, setDifficulty] = useState('');
   const [categoryId, setCategoryId] = useState();
   const [loading, setLoading] = useState(false);
   const [phaseTwo, setPhaseTwo] = useState(false);
+  const categories = useSelector((state) => state.quizCategories.categories);
+  const fetchingCategories = useSelector(
+    (state) => state.quizCategories.isFetching,
+  );
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    getCategories();
-  }, [categoryData]);
-
-  const getCategories = async () => {
-    if (categoryData.length === 0) {
-      setLoading(true);
-      await getAllCategoryData();
-      setLoading(false);
+    if (categories.length === 0) {
+      dispatch(fetchQuizCategories());
     }
-  };
+  }, []);
 
   const handleSubmit = async () => {
     console.log(categoryId, difficulty);
     setLoading(true);
-    await getTriviaData(categoryId, difficulty);
+    const triviaData = await getTriviaData(categoryId, difficulty);
     setLoading(false);
-    navigation.navigate(TRIVIAQ_SCREEN);
+    navigation.navigate(TRIVIAQ_SCREEN, { triviaData });
   };
 
   React.useLayoutEffect(() => {
@@ -67,7 +64,7 @@ const Trivia = ({ navigation }) => {
         <View style={styles.content}>
           <Text style={styles.title}>Select a Category</Text>
           <Category
-            data={categoryData}
+            data={categories}
             getId={(value) => {
               setCategoryId(value);
               setPhaseTwo(true);
@@ -88,7 +85,7 @@ const Trivia = ({ navigation }) => {
           )}
         </View>
       )}
-      {loading && (
+      {(loading || fetchingCategories) && (
         <View style={styles.loadingSpinner}>
           <ActivityIndicator size="large" color={colors.primaryColor} />
         </View>

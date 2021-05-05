@@ -1,37 +1,31 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Avatar, Button, ListItem } from 'react-native-elements';
-import * as firebase from 'firebase';
+import { useDispatch, useSelector } from 'react-redux';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { AppContext } from 'context';
-import { logoutUser } from 'functions/auth';
 import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
+import { logoutUser } from 'functions/auth';
+import { fetchQuizes } from 'store/reducers/quizes';
+import { getTimeAgo } from 'functions/util';
 
 const Profile = ({ navigation }) => {
-  const [loading, setLoading] = useState();
-  const [userQuizes, setUserQuizes] = useState([]);
-  const { user } = useContext(AppContext);
+  const user = useSelector((state) => state.user.user);
+  const userQuizes = useSelector((state) => state.quizes.quizes);
+  const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    firebase
-      .firestore()
-      .collection('quizResults')
-      .where('uid', '==', user.uid)
-      .orderBy('completed', 'desc')
-      .get()
-      .then((querySnapshot) => {
-        const quizes = [];
-        querySnapshot.forEach((documentSnapshot) => {
-          quizes.push({
-            id: documentSnapshot.id,
-            ...documentSnapshot.data(),
-          });
-        });
-        setUserQuizes(quizes);
-      });
-  }, [setUserQuizes]);
+    dispatch(fetchQuizes());
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>
@@ -71,6 +65,11 @@ const Profile = ({ navigation }) => {
             </View>
           </View>
           <ScrollView>
+            {fetchingQuizes && (
+              <View style={styles.loadingSpinner}>
+                <ActivityIndicator size="large" color={colors.primaryColor} />
+              </View>
+            )}
             {userQuizes.map((quiz, i) => (
               <ListItem
                 key={i}
@@ -86,12 +85,10 @@ const Profile = ({ navigation }) => {
                     {quiz.category}
                   </ListItem.Title>
                   <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {quiz.difficulty} &bull;{' '}
-                    {new Date(quiz.completed).getMonth() +
-                      '/' +
-                      new Date(quiz.completed).getDay() +
-                      '/' +
-                      new Date(quiz.completed).getFullYear()}
+                    {quiz.difficulty}
+                  </ListItem.Subtitle>
+                  <ListItem.Subtitle style={{ fontSize: 16 }}>
+                    {getTimeAgo(quiz.completed)}
                   </ListItem.Subtitle>
                 </ListItem.Content>
                 <ListItem.Content style={{ alignItems: 'flex-end' }}>
@@ -126,6 +123,7 @@ const Profile = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
+    flex: 1,
   },
   profileHeader: {
     marginVertical: 20,
