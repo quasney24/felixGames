@@ -25,7 +25,8 @@ const TriviaQ = ({ navigation, route }) => {
     if (counter === 10) {
       let correct = 0;
       let incorrect = 0;
-      questionResults.forEach((q) => {
+      const quizQuestions = [...questionResults, question];
+      quizQuestions.forEach((q) => {
         if (q.answeredCorrect) {
           return correct++;
         }
@@ -35,7 +36,7 @@ const TriviaQ = ({ navigation, route }) => {
       const quizResults = {
         category: triviaData.category,
         difficulty: triviaData.difficulty,
-        questions: [...questionResults, question],
+        questions: quizQuestions,
         correct,
         incorrect,
         completed: Date.now(),
