@@ -7,10 +7,12 @@ import {
   LOGIN_SCREEN,
   PROFILE_SCREEN,
   QUIZ_RESULTS_SCREEN,
+  QUIZ_RESULTS_LIST_SCREEN,
 } from 'screens/routes';
 import Login from 'screens/Login';
 import Profile from 'screens/Profile';
 import QuizResults from 'screens/QuizResults';
+import QuizResultsList from 'screens/QuizResultsList';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +49,14 @@ export default function ProfileStack() {
         options={{
           ...defaultOptions,
           title: 'Quiz Results',
+        }}
+      />
+      <Stack.Screen
+        name={QUIZ_RESULTS_LIST_SCREEN}
+        component={QuizResultsList}
+        options={{
+          ...defaultOptions,
+          title: 'Quizzes',
         }}
       />
     </Stack.Navigator>

@@ -7,15 +7,14 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Avatar, Button, ListItem } from 'react-native-elements';
+import { Avatar, Badge, Button, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
+import { QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
 import { logoutUser } from 'functions/auth';
 import { fetchQuizes } from 'store/reducers/quizes';
-import { getTimeAgo } from 'functions/util';
 
 const Profile = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
@@ -70,38 +69,23 @@ const Profile = ({ navigation }) => {
                 <ActivityIndicator size="large" color={colors.primaryColor} />
               </View>
             )}
-            {userQuizes.map((quiz, i) => (
+            {!fetchingQuizes && (
               <ListItem
-                key={i}
                 bottomDivider
                 containerStyle={styles.profileListItem}
                 onPress={() => {
-                  navigation.navigate(QUIZ_RESULTS_SCREEN, {
-                    quizResults: quiz,
-                  });
+                  navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
                 }}>
                 <ListItem.Content>
                   <ListItem.Title style={{ fontSize: 20 }}>
-                    {quiz.category}
+                    Quizzes
                   </ListItem.Title>
-                  <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {quiz.difficulty}
-                  </ListItem.Subtitle>
-                  <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {getTimeAgo(quiz.completed)}
-                  </ListItem.Subtitle>
                 </ListItem.Content>
                 <ListItem.Content style={{ alignItems: 'flex-end' }}>
-                  <ListItem.Title
-                    style={
-                      quiz.correct <= 5
-                        ? { ...styles.resultText, ...styles.failText }
-                        : quiz.correct <= 7
-                        ? { ...styles.resultText, ...styles.averageText }
-                        : { ...styles.resultText, ...styles.passText }
-                    }>
-                    {quiz.correct} / {quiz.questions.length}
-                  </ListItem.Title>
+                  <Badge
+                    value={userQuizes.length}
+                    badgeStyle={styles.listItemBadge}
+                  />
                 </ListItem.Content>
                 <ListItem.Chevron
                   size={35}
@@ -112,7 +96,7 @@ const Profile = ({ navigation }) => {
                   }
                 />
               </ListItem>
-            ))}
+            )}
           </ScrollView>
         </>
       )}
@@ -168,6 +152,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     textTransform: 'capitalize',
+  },
+  listItemBadge: {
+    backgroundColor: colors.primaryColor,
+    minHeight: 35,
+    minWidth: 35,
+    borderRadius: 50,
+    padding: 5,
+    borderWidth: 0,
   },
 });
 
