@@ -9,12 +9,14 @@ import {
   PROFILE_SCREEN,
   QUIZ_RESULTS_SCREEN,
   QUIZ_RESULTS_LIST_SCREEN,
+  USER_SEARCH_SCREEN,
 } from 'screens/routes';
 import Friends from 'screens/Friends';
 import Login from 'screens/Login';
 import Profile from 'screens/Profile';
 import QuizResults from 'screens/QuizResults';
 import QuizResultsList from 'screens/QuizResultsList';
+import UserSearch from 'screens/UserSearch';
 
 const Stack = createStackNavigator();
 
@@ -67,6 +69,14 @@ export default function ProfileStack() {
         options={{
           ...defaultOptions,
           title: 'Friends',
+        }}
+      />
+      <Stack.Screen
+        name={USER_SEARCH_SCREEN}
+        component={UserSearch}
+        options={{
+          ...defaultOptions,
+          title: 'Find User',
         }}
       />
     </Stack.Navigator>

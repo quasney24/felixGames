@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Avatar, Badge, Button, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
-import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';

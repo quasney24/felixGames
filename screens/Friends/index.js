@@ -3,10 +3,10 @@ import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { fetchQuizes } from 'store/reducers/quizes';
+import { USER_SEARCH_SCREEN } from 'screens/routes';
 
 const Friends = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
@@ -23,7 +23,9 @@ const Friends = ({ navigation }) => {
           <ListItem
             bottomDivider
             containerStyle={styles.profileListItem}
-            disabled>
+            onPress={() => {
+              navigation.navigate(USER_SEARCH_SCREEN);
+            }}>
             <MaterialCommunityIcons
               name="account-search"
               size={32}
