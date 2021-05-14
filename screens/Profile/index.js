@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
+import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
 import { logoutUser } from 'functions/auth';
 import { fetchQuizes } from 'store/reducers/quizes';
 
@@ -70,32 +70,54 @@ const Profile = ({ navigation }) => {
               </View>
             )}
             {!fetchingQuizes && (
-              <ListItem
-                bottomDivider
-                containerStyle={styles.profileListItem}
-                onPress={() => {
-                  navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
-                }}>
-                <ListItem.Content>
-                  <ListItem.Title style={{ fontSize: 20 }}>
-                    Quizzes
-                  </ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Content style={{ alignItems: 'flex-end' }}>
-                  <Badge
-                    value={userQuizes.length}
-                    badgeStyle={styles.listItemBadge}
+              <>
+                <ListItem
+                  bottomDivider
+                  containerStyle={styles.profileListItem}
+                  onPress={() => {
+                    navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
+                  }}>
+                  <ListItem.Content>
+                    <ListItem.Title style={{ fontSize: 20 }}>
+                      Quizzes
+                    </ListItem.Title>
+                  </ListItem.Content>
+                  <ListItem.Content style={{ alignItems: 'flex-end' }}>
+                    <Badge
+                      value={userQuizes.length}
+                      badgeStyle={styles.listItemBadge}
+                    />
+                  </ListItem.Content>
+                  <ListItem.Chevron
+                    size={35}
+                    name={
+                      Platform.OS === 'ios'
+                        ? 'ios-arrow-forward'
+                        : 'chevron-right'
+                    }
                   />
-                </ListItem.Content>
-                <ListItem.Chevron
-                  size={35}
-                  name={
-                    Platform.OS === 'ios'
-                      ? 'ios-arrow-forward'
-                      : 'chevron-right'
-                  }
-                />
-              </ListItem>
+                </ListItem>
+                <ListItem
+                  bottomDivider
+                  containerStyle={styles.profileListItem}
+                  onPress={() => {
+                    navigation.navigate(FRIENDS_SCREEN);
+                  }}>
+                  <ListItem.Content>
+                    <ListItem.Title style={{ fontSize: 20 }}>
+                      Friends
+                    </ListItem.Title>
+                  </ListItem.Content>
+                  <ListItem.Chevron
+                    size={35}
+                    name={
+                      Platform.OS === 'ios'
+                        ? 'ios-arrow-forward'
+                        : 'chevron-right'
+                    }
+                  />
+                </ListItem>
+              </>
             )}
           </ScrollView>
         </>

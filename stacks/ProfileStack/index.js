@@ -4,11 +4,13 @@ import { useSelector } from 'react-redux';
 
 import defaultOptions from 'stacks/default-options';
 import {
+  FRIENDS_SCREEN,
   LOGIN_SCREEN,
   PROFILE_SCREEN,
   QUIZ_RESULTS_SCREEN,
   QUIZ_RESULTS_LIST_SCREEN,
 } from 'screens/routes';
+import Friends from 'screens/Friends';
 import Login from 'screens/Login';
 import Profile from 'screens/Profile';
 import QuizResults from 'screens/QuizResults';
@@ -44,6 +46,14 @@ export default function ProfileStack() {
         />
       )}
       <Stack.Screen
+        name={QUIZ_RESULTS_LIST_SCREEN}
+        component={QuizResultsList}
+        options={{
+          ...defaultOptions,
+          title: 'Quizzes',
+        }}
+      />
+      <Stack.Screen
         name={QUIZ_RESULTS_SCREEN}
         component={QuizResults}
         options={{
@@ -52,11 +62,11 @@ export default function ProfileStack() {
         }}
       />
       <Stack.Screen
-        name={QUIZ_RESULTS_LIST_SCREEN}
-        component={QuizResultsList}
+        name={FRIENDS_SCREEN}
+        component={Friends}
         options={{
           ...defaultOptions,
-          title: 'Quizzes',
+          title: 'Friends',
         }}
       />
     </Stack.Navigator>
