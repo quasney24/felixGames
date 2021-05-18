@@ -63,7 +63,6 @@ const UserSearch = ({ navigation }) => {
                 .limit(25)
                 .get()
                 .then((querySnapshot) => {
-                  console.log('enter');
                   const users = [];
                   querySnapshot.forEach((documentSnapshot) => {
                     users.push(documentSnapshot.data());
@@ -94,7 +93,7 @@ const UserSearch = ({ navigation }) => {
           <ListItem
             containerStyle={styles.profileListItem}
             onPress={() => {
-              navigation.navigate(PROFILE_SCREEN, {
+              navigation.push(PROFILE_SCREEN, {
                 displayName: item.displayName,
                 userId: item.uid,
               });
@@ -104,6 +103,10 @@ const UserSearch = ({ navigation }) => {
               <Avatar
                 rounded
                 size="small"
+                avatarStyle={{
+                  backgroundColor: colors.gray,
+                }}
+                titleStyle={{ color: colors.white }}
                 source={{
                   uri: item.photoURL,
                 }}
@@ -112,6 +115,10 @@ const UserSearch = ({ navigation }) => {
               <Avatar
                 rounded
                 size="small"
+                containerStyle={{
+                  backgroundColor: colors.gray,
+                }}
+                titleStyle={{ color: colors.white }}
                 title={item.displayName ? item.displayName.charAt(0) : ''}
               />
             )}
@@ -162,7 +169,7 @@ const styles = StyleSheet.create({
     color: colors.primaryText,
   },
   profileListItem: {
-    backgroundColor: 'rgba(150, 143, 139, 0.2)',
+    backgroundColor: colors.white,
   },
 });
 

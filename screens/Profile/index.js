@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -9,35 +9,61 @@ import {
 } from 'react-native';
 import { Avatar, Badge, Button, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
+import * as firebase from 'firebase';
+import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
 import { logoutUser } from 'functions/auth';
 import { fetchQuizes } from 'store/reducers/quizes';
 
-const Profile = ({ navigation }) => {
+const Profile = ({ navigation, route }) => {
+  const { displayName, userId } = route.params;
   const user = useSelector((state) => state.user.user);
   const userQuizes = useSelector((state) => state.quizes.quizes);
   const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
+  const [profile, setProfile] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchQuizes());
+    fetchUser();
   }, [dispatch]);
+
+  const fetchUser = async () => {
+    if (user !== null) {
+      if (user.uid === userId) {
+        dispatch(fetchQuizes());
+        setViewingUserId(user.uid);
+        return setProfile(user);
+      }
+    }
+    await firebase
+      .firestore()
+      .collection('users')
+      .where('uid', '==', userId)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((documentSnapshot) => {
+          const u = documentSnapshot.data();
+          setProfile({ id: documentSnapshot.id, ...u });
+        });
+      });
+  };
 
   return (
     <View style={styles.container}>
       {user && (
         <>
           <View style={styles.profileHeader}>
-            {user && user.photoURL ? (
+            {profile && profile.photoURL ? (
               <Avatar
                 overlayContainerStyle={styles.avatar}
                 titleStyle={styles.avatarText}
                 rounded
                 size="large"
                 source={{
-                  uri: user.photoURL,
+                  uri: profile.photoURL,
                 }}
               />
             ) : (
@@ -46,21 +72,23 @@ const Profile = ({ navigation }) => {
                 titleStyle={styles.avatarText}
                 rounded
                 size="large"
-                title={user.displayName ? user.displayName.charAt(0) : ''}
+                title={profile.displayName ? profile.displayName.charAt(0) : ''}
               />
             )}
-            <Text style={styles.userNameText}>{user.displayName}</Text>
-            <View style={styles.logoutButtonContainer}>
-              <Button
-                buttonStyle={styles.logoutButton}
-                titleStyle={{ color: colors.white }}
-                textAlign="center"
-                title="Logout"
-                onPress={async () => {
-                  logoutUser();
-                }}
-              />
-            </View>
+            <Text style={styles.userNameText}>{profile.displayName}</Text>
+            {viewingUserId === user.uid && (
+              <View style={styles.logoutButtonContainer}>
+                <Button
+                  buttonStyle={styles.logoutButton}
+                  titleStyle={{ color: colors.white }}
+                  textAlign="center"
+                  title="Logout"
+                  onPress={async () => {
+                    logoutUser();
+                  }}
+                />
+              </View>
+            )}
           </View>
           <ScrollView>
             {fetchingQuizes && (
@@ -68,7 +96,7 @@ const Profile = ({ navigation }) => {
                 <ActivityIndicator size="large" color={colors.primaryColor} />
               </View>
             )}
-            {!fetchingQuizes && (
+            {!fetchingQuizes && viewingUserId === profile.uid && (
               <>
                 <ListItem
                   bottomDivider
