@@ -24,6 +24,7 @@ const UserSearch = ({ navigation }) => {
     <View style={styles.container}>
       <SearchBar
         containerStyle={styles.search}
+        inputStyle={styles.searchInput}
         value={searchInput}
         onChangeText={setSearchInput}
         placeholder="Username"
@@ -151,10 +152,15 @@ const styles = StyleSheet.create({
   },
   search: {
     width: '100%',
+    backgroundColor: colors.white,
   },
   searchButton: {
+    backgroundColor: colors.primaryColor,
     borderRadius: 0,
     margin: 0,
+  },
+  searchInput: {
+    color: colors.black,
   },
   titleContainer: {
     padding: 10,

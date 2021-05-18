@@ -24,6 +24,8 @@ const Profile = ({ navigation, route }) => {
   const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
   const [profile, setProfile] = useState(false);
   const [viewingUserId, setViewingUserId] = useState();
+  const [friendRequest, setFriendRequest] = useState();
+  const [updateInterval, setUpdateInterval] = useState();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -32,23 +34,37 @@ const Profile = ({ navigation, route }) => {
 
   const fetchUser = async () => {
     if (user !== null) {
+      setViewingUserId(user.uid);
       if (user.uid === userId) {
         dispatch(fetchQuizes());
-        setViewingUserId(user.uid);
         return setProfile(user);
       }
-    }
-    await firebase
-      .firestore()
-      .collection('users')
-      .where('uid', '==', userId)
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((documentSnapshot) => {
-          const u = documentSnapshot.data();
-          setProfile({ id: documentSnapshot.id, ...u });
+      await firebase
+        .firestore()
+        .collection('users')
+        .where('uid', '==', userId)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((documentSnapshot) => {
+            const u = documentSnapshot.data();
+            setProfile({ id: documentSnapshot.id, ...u });
+          });
         });
-      });
+      await firebase
+        .firestore()
+        .collection('friendRequests')
+        .where('requestFrom', '==', user.uid)
+        .where('requestTo', '==', userId)
+        .limit(1)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((documentSnapshot) => {
+            const req = documentSnapshot.data();
+            console.log(req);
+            setFriendRequest({ id: documentSnapshot.id, ...req });
+          });
+        });
+    }
   };
 
   return (
@@ -76,10 +92,10 @@ const Profile = ({ navigation, route }) => {
               />
             )}
             <Text style={styles.userNameText}>{profile.displayName}</Text>
-            {viewingUserId === user.uid && (
-              <View style={styles.logoutButtonContainer}>
+            <View style={styles.profileButtonContainer}>
+              {viewingUserId === profile.uid && (
                 <Button
-                  buttonStyle={styles.logoutButton}
+                  buttonStyle={styles.profileButton}
                   titleStyle={{ color: colors.white }}
                   textAlign="center"
                   title="Logout"
@@ -87,8 +103,45 @@ const Profile = ({ navigation, route }) => {
                     logoutUser();
                   }}
                 />
-              </View>
-            )}
+              )}
+              {viewingUserId !== profile.uid && (
+                <Button
+                  buttonStyle={styles.profileButton}
+                  titleStyle={{ color: colors.white }}
+                  textAlign="center"
+                  title={friendRequest ? 'Pending' : 'Add'}
+                  onPress={async () => {
+                    if (friendRequest) {
+                      firebase
+                        .firestore()
+                        .collection('friendRequests')
+                        .doc(friendRequest.id)
+                        .delete()
+                        .then(() => {
+                          setFriendRequest();
+                        });
+                    } else {
+                      firebase
+                        .firestore()
+                        .collection('friendRequests')
+                        .add({
+                          requestFrom: viewingUserId,
+                          requestTo: profile.uid,
+                          createdDate: Date.now(),
+                        })
+                        .then((docRef) => {
+                          setFriendRequest({
+                            id: docRef.id,
+                            requestFrom: viewingUserId,
+                            requestTo: profile.uid,
+                            createdDate: Date.now(),
+                          });
+                        });
+                    }
+                  }}
+                />
+              )}
+            </View>
           </View>
           <ScrollView>
             {fetchingQuizes && (
@@ -173,10 +226,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  logoutButtonContainer: {
-    marginTop: 10,
+  profileButtonContainer: {
+    marginTop: 20,
+    width: '30%',
   },
-  logoutButton: {
+  profileButton: {
     backgroundColor: colors.primaryColor,
   },
   summaryContainer: {
