@@ -25,7 +25,6 @@ const Profile = ({ navigation, route }) => {
   const [profile, setProfile] = useState(false);
   const [viewingUserId, setViewingUserId] = useState();
   const [friendRequest, setFriendRequest] = useState();
-  const [updateInterval, setUpdateInterval] = useState();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -125,15 +124,22 @@ const Profile = ({ navigation, route }) => {
                         .firestore()
                         .collection('friendRequests')
                         .add({
-                          requestFrom: viewingUserId,
+                          requestFrom: user.uid,
+                          requestFromName: user.displayName,
+                          requestFromId: user.id,
                           requestTo: profile.uid,
+                          requestToName: profile.displayName,
+                          requestToId: profile.id,
                           createdDate: Date.now(),
                         })
                         .then((docRef) => {
                           setFriendRequest({
-                            id: docRef.id,
-                            requestFrom: viewingUserId,
+                            requestFrom: user.uid,
+                            requestFromName: user.displayName,
+                            requestFromId: user.id,
                             requestTo: profile.uid,
+                            requestToName: profile.displayName,
+                            requestToId: profile.id,
                             createdDate: Date.now(),
                           });
                         });
