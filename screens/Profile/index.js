@@ -24,6 +24,7 @@ const Profile = ({ navigation, route }) => {
   const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
   const [profile, setProfile] = useState(false);
   const [viewingUserId, setViewingUserId] = useState();
+  const [isFriend, setIsFriend] = useState();
   const [friendRequest, setFriendRequest] = useState();
   const dispatch = useDispatch();
 
@@ -44,23 +45,25 @@ const Profile = ({ navigation, route }) => {
         .where('uid', '==', userId)
         .get()
         .then((querySnapshot) => {
-          querySnapshot.forEach((documentSnapshot) => {
+          querySnapshot.forEach(async (documentSnapshot) => {
             const u = documentSnapshot.data();
             setProfile({ id: documentSnapshot.id, ...u });
-          });
-        });
-      await firebase
-        .firestore()
-        .collection('friendRequests')
-        .where('requestFrom', '==', user.uid)
-        .where('requestTo', '==', userId)
-        .limit(1)
-        .get()
-        .then((querySnapshot) => {
-          querySnapshot.forEach((documentSnapshot) => {
-            const req = documentSnapshot.data();
-            console.log(req);
-            setFriendRequest({ id: documentSnapshot.id, ...req });
+            if (u.friends.includes(user.uid)) {
+              return setIsFriend(true);
+            }
+            await firebase
+              .firestore()
+              .collection('friendRequests')
+              .where('requestFrom', '==', user.uid)
+              .where('requestTo', '==', userId)
+              .limit(1)
+              .get()
+              .then((requestSnapshot) => {
+                requestSnapshot.forEach((request) => {
+                  const req = request.data();
+                  setFriendRequest({ id: request.id, ...req });
+                });
+              });
           });
         });
     }
@@ -103,7 +106,55 @@ const Profile = ({ navigation, route }) => {
                   }}
                 />
               )}
-              {viewingUserId !== profile.uid && (
+              {viewingUserId !== profile.uid && isFriend && (
+                <Button
+                  buttonStyle={{
+                    ...styles.profileButton,
+                    backgroundColor: 'red',
+                  }}
+                  titleStyle={{ color: colors.white }}
+                  textAlign="center"
+                  title="Remove"
+                  onPress={async () => {
+                    const profileReference = firebase
+                      .firestore()
+                      .doc(`users/${profile.id}`);
+                    firebase.firestore().runTransaction(async (transaction) => {
+                      const profileSnapshot = await transaction.get(
+                        profileReference,
+                      );
+                      await transaction.update(profileReference, {
+                        friends: [
+                          ...profileSnapshot
+                            .data()
+                            .friends.filter(
+                              (friend) => friend.uid !== user.uid,
+                            ),
+                        ],
+                      });
+                    });
+
+                    const userReference = firebase
+                      .firestore()
+                      .doc(`users/${user.id}`);
+                    firebase.firestore().runTransaction(async (transaction) => {
+                      const userSnapshot = await transaction.get(userReference);
+                      await transaction.update(userReference, {
+                        friends: [
+                          ...userSnapshot
+                            .data()
+                            .friends.filter(
+                              (friend) => friend.uid !== profile.uid,
+                            ),
+                        ],
+                      });
+                    });
+
+                    setIsFriend(false);
+                  }}
+                />
+              )}
+              {viewingUserId !== profile.uid && !isFriend && (
                 <Button
                   buttonStyle={styles.profileButton}
                   titleStyle={{ color: colors.white }}
