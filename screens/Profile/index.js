@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Avatar, Badge, Button, ListItem } from 'react-native-elements';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -24,7 +25,8 @@ const Profile = ({ navigation, route }) => {
   const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
   const [profile, setProfile] = useState(false);
   const [viewingUserId, setViewingUserId] = useState();
-  const [isFriend, setIsFriend] = useState();
+  const [isFriend, setIsFriend] = useState(false);
+  const [isPendingRequestFor, setIsPendingRequestFor] = useState(false);
   const [friendRequest, setFriendRequest] = useState();
   const dispatch = useDispatch();
 
@@ -48,9 +50,24 @@ const Profile = ({ navigation, route }) => {
           querySnapshot.forEach(async (documentSnapshot) => {
             const u = documentSnapshot.data();
             setProfile({ id: documentSnapshot.id, ...u });
-            if (u.friends.includes(user.uid)) {
+            if (u.friends.filter((f) => f.uid === user.uid).length > 0) {
               return setIsFriend(true);
             }
+
+            await firebase
+              .firestore()
+              .collection('friendRequests')
+              .where('requestTo', '==', user.uid)
+              .where('requestFrom', '==', userId)
+              .get()
+              .then((requestSnapshot) => {
+                requestSnapshot.forEach((request) => {
+                  const req = request.data();
+                  setFriendRequest({ id: request.id, ...req });
+                  return setIsPendingRequestFor(true);
+                });
+              });
+
             await firebase
               .firestore()
               .collection('friendRequests')
@@ -154,37 +171,29 @@ const Profile = ({ navigation, route }) => {
                   }}
                 />
               )}
-              {viewingUserId !== profile.uid && !isFriend && (
-                <Button
-                  buttonStyle={styles.profileButton}
-                  titleStyle={{ color: colors.white }}
-                  textAlign="center"
-                  title={friendRequest ? 'Pending' : 'Add'}
-                  onPress={async () => {
-                    if (friendRequest) {
-                      firebase
-                        .firestore()
-                        .collection('friendRequests')
-                        .doc(friendRequest.id)
-                        .delete()
-                        .then(() => {
-                          setFriendRequest();
-                        });
-                    } else {
-                      firebase
-                        .firestore()
-                        .collection('friendRequests')
-                        .add({
-                          requestFrom: user.uid,
-                          requestFromName: user.displayName,
-                          requestFromId: user.id,
-                          requestTo: profile.uid,
-                          requestToName: profile.displayName,
-                          requestToId: profile.id,
-                          createdDate: Date.now(),
-                        })
-                        .then((docRef) => {
-                          setFriendRequest({
+              {viewingUserId !== profile.uid &&
+                !isFriend &&
+                !isPendingRequestFor && (
+                  <Button
+                    buttonStyle={styles.profileButton}
+                    titleStyle={{ color: colors.white }}
+                    textAlign="center"
+                    title={friendRequest ? 'Pending' : 'Add'}
+                    onPress={async () => {
+                      if (friendRequest) {
+                        firebase
+                          .firestore()
+                          .collection('friendRequests')
+                          .doc(friendRequest.id)
+                          .delete()
+                          .then(() => {
+                            setFriendRequest();
+                          });
+                      } else {
+                        firebase
+                          .firestore()
+                          .collection('friendRequests')
+                          .add({
                             requestFrom: user.uid,
                             requestFromName: user.displayName,
                             requestFromId: user.id,
@@ -192,12 +201,102 @@ const Profile = ({ navigation, route }) => {
                             requestToName: profile.displayName,
                             requestToId: profile.id,
                             createdDate: Date.now(),
+                          })
+                          .then((docRef) => {
+                            setFriendRequest({
+                              requestFrom: user.uid,
+                              requestFromName: user.displayName,
+                              requestFromId: user.id,
+                              requestTo: profile.uid,
+                              requestToName: profile.displayName,
+                              requestToId: profile.id,
+                              createdDate: Date.now(),
+                            });
                           });
-                        });
-                    }
-                  }}
-                />
-              )}
+                      }
+                    }}
+                  />
+                )}
+              {viewingUserId !== profile.uid &&
+                !isFriend &&
+                isPendingRequestFor && (
+                  <View
+                    style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    <MaterialCommunityIcons
+                      name="close-circle"
+                      size={50}
+                      color="red"
+                      style={{ marginRight: '10%' }}
+                      onPress={() => {
+                        firebase
+                          .firestore()
+                          .collection('friendRequests')
+                          .doc(friendRequest.id)
+                          .delete()
+                          .then(() => {
+                            setFriendRequest();
+                          });
+                      }}
+                    />
+                    <MaterialCommunityIcons
+                      name="check-circle"
+                      size={50}
+                      color={colors.primaryColor}
+                      onPress={() => {
+                        firebase
+                          .firestore()
+                          .collection('friendRequests')
+                          .doc(friendRequest.id)
+                          .delete()
+                          .then(() => {
+                            setFriendRequest();
+                          });
+
+                        const profileReference = firebase
+                          .firestore()
+                          .doc(`users/${friendRequest.requestFromId}`);
+                        firebase
+                          .firestore()
+                          .runTransaction(async (transaction) => {
+                            const profileSnapshot = await transaction.get(
+                              profileReference,
+                            );
+                            await transaction.update(profileReference, {
+                              friends: [
+                                ...profileSnapshot.data().friends,
+                                {
+                                  uid: friendRequest.requestTo,
+                                  displayName: friendRequest.requestToName,
+                                },
+                              ],
+                            });
+                          });
+
+                        const userReference = firebase
+                          .firestore()
+                          .doc(`users/${friendRequest.requestToId}`);
+                        firebase
+                          .firestore()
+                          .runTransaction(async (transaction) => {
+                            const userSnapshot = await transaction.get(
+                              userReference,
+                            );
+                            await transaction.update(userReference, {
+                              friends: [
+                                ...userSnapshot.data().friends,
+                                {
+                                  uid: friendRequest.requestFrom,
+                                  displayName: friendRequest.requestFromName,
+                                },
+                              ],
+                            });
+                          });
+
+                        setIsFriend(true);
+                      }}
+                    />
+                  </View>
+                )}
             </View>
           </View>
           <ScrollView>
