@@ -8,6 +8,11 @@ import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { PROFILE_SCREEN, USER_SEARCH_SCREEN } from 'screens/routes';
+import {
+  addFriend,
+  deleteFriendRequest,
+  getUsersFriendRequests,
+} from 'functions/friends';
 
 const Friends = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
@@ -19,19 +24,8 @@ const Friends = ({ navigation }) => {
   }, [dispatch]);
 
   const fetchRequests = async () => {
-    await firebase
-      .firestore()
-      .collection('friendRequests')
-      .where('requestTo', '==', user.uid)
-      .get()
-      .then((querySnapshot) => {
-        const requests = [];
-        querySnapshot.forEach((documentSnapshot) => {
-          const req = documentSnapshot.data();
-          requests.push({ id: documentSnapshot.id, ...req });
-        });
-        setFriendRequests(requests);
-      });
+    const requests = await getUsersFriendRequests(user.uid);
+    setFriendRequests(requests);
   };
 
   return (
@@ -102,74 +96,35 @@ const Friends = ({ navigation }) => {
                     size={40}
                     color="red"
                     style={{ marginRight: '10%' }}
-                    onPress={() => {
-                      firebase
-                        .firestore()
-                        .collection('friendRequests')
-                        .doc(request.id)
-                        .delete()
-                        .then(() => {
-                          setFriendRequests((prevState) =>
-                            prevState.filter((req) => req.id !== request.id),
-                          );
-                        });
+                    onPress={async () => {
+                      await deleteFriendRequest(request.id);
+                      setFriendRequests((prevState) =>
+                        prevState.filter((req) => req.id !== request.id),
+                      );
                     }}
                   />
                   <MaterialCommunityIcons
                     name="check-circle"
                     size={40}
                     color={colors.primaryColor}
-                    onPress={() => {
-                      firebase
-                        .firestore()
-                        .collection('friendRequests')
-                        .doc(request.id)
-                        .delete()
-                        .then(() => {
-                          setFriendRequests((prevState) =>
-                            prevState.filter((req) => req.id !== request.id),
-                          );
-                        });
+                    onPress={async () => {
+                      await addFriend(
+                        {
+                          id: request.requestToId,
+                          uid: request.requestTo,
+                          displayName: request.requestToName,
+                        },
+                        {
+                          id: request.requestFromId,
+                          uid: request.requestFrom,
+                          displayName: request.requestFromName,
+                        },
+                      );
 
-                      const profileReference = firebase
-                        .firestore()
-                        .doc(`users/${request.requestFromId}`);
-                      firebase
-                        .firestore()
-                        .runTransaction(async (transaction) => {
-                          const profileSnapshot = await transaction.get(
-                            profileReference,
-                          );
-                          await transaction.update(profileReference, {
-                            friends: [
-                              ...profileSnapshot.data().friends,
-                              {
-                                uid: request.requestTo,
-                                displayName: request.requestToName,
-                              },
-                            ],
-                          });
-                        });
-
-                      const userReference = firebase
-                        .firestore()
-                        .doc(`users/${request.requestToId}`);
-                      firebase
-                        .firestore()
-                        .runTransaction(async (transaction) => {
-                          const userSnapshot = await transaction.get(
-                            userReference,
-                          );
-                          await transaction.update(userReference, {
-                            friends: [
-                              ...userSnapshot.data().friends,
-                              {
-                                uid: request.requestFrom,
-                                displayName: request.requestFromName,
-                              },
-                            ],
-                          });
-                        });
+                      await deleteFriendRequest(request.id);
+                      setFriendRequests((prevState) =>
+                        prevState.filter((req) => req.id !== request.id),
+                      );
                     }}
                   />
                 </View>
