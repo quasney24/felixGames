@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Avatar, Badge, Button, ListItem } from 'react-native-elements';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Avatar, Badge, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
-import { logoutUser } from 'functions/auth';
 import { fetchQuizes } from 'store/reducers/quizes';
 import {
   addFriend,
@@ -24,6 +23,8 @@ import {
   findFriendRequest,
   removeFriend,
 } from 'functions/friends';
+import errorMessages from 'consts/errorMessages';
+import ProfileButtons from './ProfileButtons';
 
 const Profile = ({ navigation, route }) => {
   const { displayName, userId } = route.params;
@@ -34,6 +35,8 @@ const Profile = ({ navigation, route }) => {
   const [isFriend, setIsFriend] = useState(false);
   const [isPendingRequestFor, setIsPendingRequestFor] = useState(false);
   const [friendRequest, setFriendRequest] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -47,37 +50,123 @@ const Profile = ({ navigation, route }) => {
         dispatch(fetchQuizes());
         return setProfile(user);
       }
-      // else retrieve user's profile
-      await firebase
-        .firestore()
-        .collection('users')
-        .where('uid', '==', userId)
-        .get()
-        .then((querySnapshot) => {
-          querySnapshot.forEach(async (documentSnapshot) => {
-            const u = documentSnapshot.data();
-            setProfile({ id: documentSnapshot.id, ...u });
+      try {
+        setIsLoading(true);
+        // else retrieve user's profile
+        await firebase
+          .firestore()
+          .collection('users')
+          .where('uid', '==', userId)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach(async (documentSnapshot) => {
+              const u = documentSnapshot.data();
+              setProfile({ id: documentSnapshot.id, ...u });
 
-            // return if friends
-            if (u.friends.filter((f) => f.uid === user.uid).length > 0) {
-              return setIsFriend(true);
-            }
+              // return if friends
+              if (u.friends.filter((f) => f.uid === user.uid).length > 0) {
+                return setIsFriend(true);
+              }
 
-            // return if there is a pending request for viewing user
-            const friendRequestFor = await findFriendRequest(user.uid, userId);
-            if (friendRequestFor) {
-              setFriendRequest(friendRequestFor);
-              return setIsPendingRequestFor(true);
-            }
+              // return if there is a pending request for viewing user
+              const friendRequestFor = await findFriendRequest(
+                user.uid,
+                userId,
+              );
+              if (friendRequestFor) {
+                setIsPendingRequestFor(true);
+                return setFriendRequest(friendRequestFor);
+              }
 
-            // lastly, check if viewing user has already sent friend request
-            const friendRequestTo = await findFriendRequest(userId, user.uid);
-            console.log(friendRequestTo);
-            if (friendRequestTo) {
-              setFriendRequest(friendRequestTo);
-            }
+              // lastly, check if viewing user has already sent friend request
+              const friendRequestTo = await findFriendRequest(userId, user.uid);
+              console.log(friendRequestTo);
+              if (friendRequestTo) {
+                setFriendRequest(friendRequestTo);
+              }
+            });
           });
-        });
+      } catch (e) {
+        Alert.alert(errorMessages.profileError);
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleFriendRequest = async () => {
+    if (friendRequest) {
+      try {
+        setIsLoading(true);
+        await deleteFriendRequest(friendRequest.id);
+        setFriendRequest();
+      } catch (e) {
+        Alert.alert(errorMessages.friendRequestCancel);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      try {
+        setIsLoading(true);
+        const createdFriendRequest = await createFriendRequest(profile, user);
+        setFriendRequest(createdFriendRequest);
+      } catch (e) {
+        Alert.alert(errorMessages.friendRequestAdd);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleAcceptFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      await deleteFriendRequest(friendRequest.id);
+      setFriendRequest();
+      await addFriend(
+        {
+          id: friendRequest.requestToId,
+          uid: friendRequest.requestTo,
+          displayName: friendRequest.requestToName,
+        },
+        {
+          id: friendRequest.requestFromId,
+          uid: friendRequest.requestFrom,
+          displayName: friendRequest.requestFromName,
+        },
+      );
+      setIsFriend(true);
+      setIsPendingRequestFor(false);
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestAccept);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRejectFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      await deleteFriendRequest(friendRequest.id);
+      setFriendRequest();
+      setIsPendingRequestFor(false);
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestReject);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      await removeFriend(profile, user);
+      setIsFriend(false);
+    } catch (e) {
+      Alert.alert(errorMessages.friendRemove);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,94 +195,20 @@ const Profile = ({ navigation, route }) => {
               />
             )}
             <Text style={styles.userNameText}>{profile.displayName}</Text>
-            <View style={styles.profileButtonContainer}>
-              {user.uid === profile.uid && (
-                <Button
-                  buttonStyle={styles.profileButton}
-                  titleStyle={{ color: colors.white }}
-                  textAlign="center"
-                  title="Logout"
-                  onPress={async () => {
-                    logoutUser();
-                  }}
-                />
-              )}
-              {user.uid !== profile.uid && isFriend && (
-                <Button
-                  buttonStyle={{
-                    ...styles.profileButton,
-                    backgroundColor: 'red',
-                  }}
-                  titleStyle={{ color: colors.white }}
-                  textAlign="center"
-                  title="Remove"
-                  onPress={async () => {
-                    removeFriend(profile, user);
-                    setIsFriend(false);
-                  }}
-                />
-              )}
-              {user.uid !== profile.uid && !isFriend && !isPendingRequestFor && (
-                <Button
-                  buttonStyle={styles.profileButton}
-                  titleStyle={{ color: colors.white }}
-                  textAlign="center"
-                  title={friendRequest ? 'Pending' : 'Add'}
-                  onPress={async () => {
-                    if (friendRequest) {
-                      await deleteFriendRequest(friendRequest.id);
-                      setFriendRequest();
-                    } else {
-                      const createdFriendRequest = await createFriendRequest(
-                        profile,
-                        user,
-                      );
-                      console.log(createFriendRequest);
-                      setFriendRequest(createdFriendRequest);
-                    }
-                  }}
-                />
-              )}
-              {user.uid !== profile.uid && !isFriend && isPendingRequestFor && (
-                <View
-                  style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                  <MaterialCommunityIcons
-                    name="close-circle"
-                    size={50}
-                    color="red"
-                    style={{ marginRight: '10%' }}
-                    onPress={async () => {
-                      await deleteFriendRequest(friendRequest.id);
-                      setFriendRequest();
-                      setIsPendingRequestFor(false);
-                    }}
-                  />
-                  <MaterialCommunityIcons
-                    name="check-circle"
-                    size={50}
-                    color={colors.primaryColor}
-                    onPress={async () => {
-                      await deleteFriendRequest(friendRequest.id);
-                      setFriendRequest();
-                      await addFriend(
-                        {
-                          id: friendRequest.requestToId,
-                          uid: friendRequest.requestTo,
-                          displayName: friendRequest.requestToName,
-                        },
-                        {
-                          id: friendRequest.requestFromId,
-                          uid: friendRequest.requestFrom,
-                          displayName: friendRequest.requestFromName,
-                        },
-                      );
-                      setIsFriend(true);
-                      setIsPendingRequestFor(false);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
+            {!error && (
+              <ProfileButtons
+                friendRequest={friendRequest}
+                handleAcceptFriendRequest={handleAcceptFriendRequest}
+                handleFriendRequest={handleFriendRequest}
+                handleRejectFriendRequest={handleRejectFriendRequest}
+                handleRemoveFriend={handleRemoveFriendRequest}
+                isFriend={isFriend}
+                isLoading={isLoading}
+                isPendingRequestFor={isPendingRequestFor}
+                profile={profile}
+                user={user}
+              />
+            )}
           </View>
           <ScrollView>
             {fetchingQuizes && (
@@ -277,13 +292,6 @@ const styles = StyleSheet.create({
   userNameText: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  profileButtonContainer: {
-    marginTop: 20,
-    width: '30%',
-  },
-  profileButton: {
-    backgroundColor: colors.primaryColor,
   },
   summaryContainer: {
     textAlign: 'center',

@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import * as firebase from 'firebase';
-import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import { PROFILE_SCREEN, USER_SEARCH_SCREEN } from 'screens/routes';
@@ -13,10 +18,12 @@ import {
   deleteFriendRequest,
   getUsersFriendRequests,
 } from 'functions/friends';
+import errorMessages from 'consts/errorMessages';
 
 const Friends = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
   const [friendRequests, setFriendRequests] = useState([]);
+  const [handlingFriendRequest, setHandlingFriendRequest] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,6 +33,46 @@ const Friends = ({ navigation }) => {
   const fetchRequests = async () => {
     const requests = await getUsersFriendRequests(user.uid);
     setFriendRequests(requests);
+  };
+
+  const handleAcceptFriendRequest = async (request) => {
+    try {
+      setHandlingFriendRequest(true);
+      await deleteFriendRequest(request.id);
+      setFriendRequests((prevState) =>
+        prevState.filter((req) => req.id !== request.id),
+      );
+      await addFriend(
+        {
+          id: request.requestToId,
+          uid: request.requestTo,
+          displayName: request.requestToName,
+        },
+        {
+          id: request.requestFromId,
+          uid: request.requestFrom,
+          displayName: request.requestFromName,
+        },
+      );
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestAccept);
+    } finally {
+      setHandlingFriendRequest(false);
+    }
+  };
+
+  const handleRejectFriendRequest = async (request) => {
+    try {
+      setHandlingFriendRequest(true);
+      await deleteFriendRequest(request.id);
+      setFriendRequests((prevState) =>
+        prevState.filter((req) => req.id !== request.id),
+      );
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestReject);
+    } finally {
+      setHandlingFriendRequest(false);
+    }
   };
 
   return (
@@ -91,42 +138,32 @@ const Friends = ({ navigation }) => {
               </ListItem.Content>
               <ListItem.Content style={{ alignItems: 'flex-end' }}>
                 <View style={{ flexDirection: 'row' }}>
-                  <MaterialCommunityIcons
-                    name="close-circle"
-                    size={40}
-                    color="red"
-                    style={{ marginRight: '10%' }}
-                    onPress={async () => {
-                      await deleteFriendRequest(request.id);
-                      setFriendRequests((prevState) =>
-                        prevState.filter((req) => req.id !== request.id),
-                      );
-                    }}
-                  />
-                  <MaterialCommunityIcons
-                    name="check-circle"
-                    size={40}
-                    color={colors.primaryColor}
-                    onPress={async () => {
-                      await addFriend(
-                        {
-                          id: request.requestToId,
-                          uid: request.requestTo,
-                          displayName: request.requestToName,
-                        },
-                        {
-                          id: request.requestFromId,
-                          uid: request.requestFrom,
-                          displayName: request.requestFromName,
-                        },
-                      );
-
-                      await deleteFriendRequest(request.id);
-                      setFriendRequests((prevState) =>
-                        prevState.filter((req) => req.id !== request.id),
-                      );
-                    }}
-                  />
+                  {handlingFriendRequest && (
+                    <View>
+                      <ActivityIndicator
+                        size="large"
+                        color={colors.primaryColor}
+                        style={styles.loadingIndicator}
+                      />
+                    </View>
+                  )}
+                  {!handlingFriendRequest && (
+                    <>
+                      <MaterialCommunityIcons
+                        name="close-circle"
+                        size={40}
+                        color="red"
+                        style={{ marginRight: '10%' }}
+                        onPress={async () => handleRejectFriendRequest(request)}
+                      />
+                      <MaterialCommunityIcons
+                        name="check-circle"
+                        size={40}
+                        color={colors.primaryColor}
+                        onPress={async () => handleAcceptFriendRequest(request)}
+                      />
+                    </>
+                  )}
                 </View>
               </ListItem.Content>
             </ListItem>
