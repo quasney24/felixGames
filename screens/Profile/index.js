@@ -23,6 +23,7 @@ import {
   findFriendRequest,
   removeFriend,
 } from 'functions/friends';
+import { updateUserFriends } from 'store/reducers/user';
 import errorMessages from 'consts/errorMessages';
 import ProfileButtons from './ProfileButtons';
 
@@ -138,6 +139,15 @@ const Profile = ({ navigation, route }) => {
       );
       setIsFriend(true);
       setIsPendingRequestFor(false);
+      dispatch(
+        updateUserFriends([
+          ...user.friends,
+          {
+            uid: friendRequest.requestFrom,
+            displayName: friendRequest.requestFromName,
+          },
+        ]),
+      );
     } catch (e) {
       Alert.alert(errorMessages.friendRequestAccept);
     } finally {
@@ -158,10 +168,13 @@ const Profile = ({ navigation, route }) => {
     }
   };
 
-  const handleRemoveFriendRequest = async () => {
+  const handleRemoveFriend = async () => {
     try {
       setIsLoading(true);
       await removeFriend(profile, user);
+      dispatch(
+        updateUserFriends(user.friends.filter((u) => u.uid !== profile.uid)),
+      );
       setIsFriend(false);
     } catch (e) {
       Alert.alert(errorMessages.friendRemove);
@@ -201,7 +214,7 @@ const Profile = ({ navigation, route }) => {
                 handleAcceptFriendRequest={handleAcceptFriendRequest}
                 handleFriendRequest={handleFriendRequest}
                 handleRejectFriendRequest={handleRejectFriendRequest}
-                handleRemoveFriend={handleRemoveFriendRequest}
+                handleRemoveFriend={handleRemoveFriend}
                 isFriend={isFriend}
                 isLoading={isLoading}
                 isPendingRequestFor={isPendingRequestFor}

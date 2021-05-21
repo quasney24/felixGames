@@ -18,6 +18,7 @@ import {
   deleteFriendRequest,
   getUsersFriendRequests,
 } from 'functions/friends';
+import { updateUserFriends } from 'store/reducers/user';
 import errorMessages from 'consts/errorMessages';
 
 const Friends = ({ navigation }) => {
@@ -53,6 +54,15 @@ const Friends = ({ navigation }) => {
           uid: request.requestFrom,
           displayName: request.requestFromName,
         },
+      );
+      dispatch(
+        updateUserFriends([
+          ...user.friends,
+          {
+            uid: request.requestFrom,
+            displayName: request.requestFromName,
+          },
+        ]),
       );
     } catch (e) {
       Alert.alert(errorMessages.friendRequestAccept);
