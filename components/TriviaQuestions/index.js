@@ -5,7 +5,6 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import ProgressBar from 'react-native-progress/Bar';
 
 import colors from 'consts/colors';
-import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 
 const TriviaQuestions = ({
   category,
@@ -17,14 +16,33 @@ const TriviaQuestions = ({
   const [clicked, setClicked] = useState(false);
   const [correct, setCorrect] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [timeUp, setTimeIsUp] = useState(false);
+  const [intervalId, setIntervalId] = useState();
 
   useEffect(() => {
-    setInterval(() => {
-      if (timer < 1) {
-        setTimer((prevState) => prevState + 0.1);
-      }
-    }, 1000);
-  }, []);
+    if (timeUp) {
+      clearInterval(intervalId);
+      setClicked(true);
+      setSelected('');
+      setCorrect(false);
+    }
+
+    if (!clicked) {
+      const id = setInterval(() => {
+        if (timer < 1 && !clicked) {
+          setTimer((prevState) => {
+            const newTime = prevState + 0.1;
+            if (newTime >= 1) {
+              setClicked(true);
+              setTimeIsUp(true);
+            }
+            return newTime;
+          });
+        }
+      }, 1000);
+      setIntervalId(id);
+    }
+  }, [clicked]);
 
   const handleCorrectResult = () => {
     return (
@@ -46,13 +64,13 @@ const TriviaQuestions = ({
     <View style={styles.base}>
       <View style={{ position: 'absolute', left: 0, width: '100%' }}>
         <ProgressBar
-          animationConfig={{ duration: 1000 }}
+          animationConfig={{ duration: 500 }}
           animationType="timing"
           width={null}
           height={10}
           borderWidth={0}
           progress={timer}
-          color={colors.accentColor}
+          color={timeUp ? colors.incorrect : colors.accentColor}
           useNativeDriver={true}
         />
         {/* <CountdownCircleTimer
@@ -95,6 +113,7 @@ const TriviaQuestions = ({
                 style={styles.contentWrapper}
                 disabled={clicked}
                 onPress={() => {
+                  clearInterval(intervalId);
                   setClicked(true);
                   setSelected(d);
                   setCorrect(
@@ -126,6 +145,8 @@ const TriviaQuestions = ({
             onPress={() => {
               handleNext(selected, correct);
               setClicked(false);
+              setTimer(0);
+              setTimeIsUp(false);
             }}>
             <View style={styles.textBox}>
               <Text
