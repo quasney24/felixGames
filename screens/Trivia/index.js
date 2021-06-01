@@ -11,7 +11,7 @@ import { Text } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Category from 'components/Category';
-import Difficulty from 'components/Difficulty';
+import QuizSettingSelction from 'components/QuizSettingSelction';
 import { getTriviaData } from 'functions/quiz';
 import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import { TRIVIAQ_SCREEN } from 'screens/routes';
@@ -19,6 +19,7 @@ import colors from 'consts/colors';
 
 const Trivia = ({ navigation }) => {
   const [difficulty, setDifficulty] = useState('');
+  const [time, setTime] = useState(0);
   const [categoryId, setCategoryId] = useState();
   const [loading, setLoading] = useState(false);
   const [phaseTwo, setPhaseTwo] = useState(false);
@@ -39,7 +40,7 @@ const Trivia = ({ navigation }) => {
     setLoading(true);
     const triviaData = await getTriviaData(categoryId, difficulty);
     setLoading(false);
-    navigation.navigate(TRIVIAQ_SCREEN, { triviaData });
+    navigation.navigate(TRIVIAQ_SCREEN, { triviaData, timePerQuestion: time });
   };
 
   React.useLayoutEffect(() => {
@@ -72,18 +73,29 @@ const Trivia = ({ navigation }) => {
           />
         </View>
       ) : (
-        <View style={styles.content}>
-          <Text style={styles.title}>Select a Difficulty</Text>
-          <Difficulty
-            diff={difficulty}
-            setDiff={(value) => setDifficulty(value)}
-          />
-          {!loading && (
-            <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
-              <Text style={styles.title}>start</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <>
+          <View style={styles.content}>
+            <Text style={styles.title}>Difficulty</Text>
+            <QuizSettingSelction
+              values={['easy', 'medium', 'hard']}
+              selectedValue={difficulty}
+              setSelectedValue={(value) => setDifficulty(value)}
+            />
+          </View>
+          <View style={styles.content}>
+            <Text style={styles.title}>Time</Text>
+            <QuizSettingSelction
+              values={[0, 10, 20]}
+              selectedValue={time}
+              setSelectedValue={(value) => setTime(value)}
+            />
+            {!loading && (
+              <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
+                <Text style={styles.title}>start</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </>
       )}
       {(loading || fetchingCategories) && (
         <View style={styles.loadingSpinner}>
@@ -103,7 +115,7 @@ const styles = StyleSheet.create({
   content: {
     marginHorizontal: 20,
     alignContent: 'center',
-    marginVertical: 20,
+    marginVertical: '3%',
   },
   title: {
     color: colors.primaryColor,

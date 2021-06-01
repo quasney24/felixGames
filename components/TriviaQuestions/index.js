@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import ProgressBar from 'react-native-progress/Bar';
@@ -10,12 +10,16 @@ const TriviaQuestions = ({
   category,
   currentQuestion,
   counter,
+  timePerQuestion,
   handleNext,
 }) => {
   const [selected, setSelected] = useState('');
   const [clicked, setClicked] = useState(false);
   const [correct, setCorrect] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [timerIncrement, setTimerIncrement] = useState(
+    1 / timePerQuestion || 0,
+  );
   const [timeUp, setTimeIsUp] = useState(false);
   const [intervalId, setIntervalId] = useState();
 
@@ -26,12 +30,11 @@ const TriviaQuestions = ({
       setSelected('');
       setCorrect(false);
     }
-
-    if (!clicked) {
+    if (timePerQuestion !== 0 && !clicked) {
       const id = setInterval(() => {
         if (timer < 1 && !clicked) {
           setTimer((prevState) => {
-            const newTime = prevState + 0.1;
+            const newTime = prevState + timerIncrement;
             if (newTime >= 1) {
               setClicked(true);
               setTimeIsUp(true);

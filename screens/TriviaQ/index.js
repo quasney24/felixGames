@@ -8,7 +8,7 @@ import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
 import { saveQuiz } from 'store/reducers/quizes';
 
 const TriviaQ = ({ navigation, route }) => {
-  const { triviaData } = route.params;
+  const { triviaData, timePerQuestion } = route.params;
   const user = useSelector((state) => state.user.user);
   const [counter, setCounter] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(
@@ -63,6 +63,7 @@ const TriviaQ = ({ navigation, route }) => {
         category={triviaData.category}
         currentQuestion={currentQuestion}
         counter={counter}
+        timePerQuestion={timePerQuestion}
         handleNext={handleNext}
       />
     </View>
