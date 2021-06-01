@@ -42,7 +42,7 @@ const Profile = ({ navigation, route }) => {
 
   useEffect(() => {
     fetchUser();
-  }, [dispatch]);
+  }, []);
 
   const fetchUser = async () => {
     if (user !== null) {
