@@ -5,12 +5,14 @@ import defaultOptions from 'stacks/default-options';
 import Home from 'screens/Home';
 import Trivia from 'screens/Trivia';
 import TriviaQ from 'screens/TriviaQ';
+import QuestionSubmit from 'screens/QuestionSubmit';
 import QuizResults from 'screens/QuizResults';
 import {
   HOME_SCREEN,
   TRIVIA_SCREEN,
   TRIVIAQ_SCREEN,
   QUIZ_RESULTS_SCREEN,
+  QUESTION_SUBMIT,
 } from 'screens/routes';
 
 const Stack = createStackNavigator();
@@ -40,6 +42,14 @@ export default function HomeStack() {
         options={{
           ...defaultOptions,
           title: 'TriviaQ',
+        }}
+      />
+      <Stack.Screen
+        name={QUESTION_SUBMIT}
+        component={QuestionSubmit}
+        options={{
+          ...defaultOptions,
+          title: 'Submit a Question',
         }}
       />
       <Stack.Screen

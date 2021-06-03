@@ -2,6 +2,7 @@ export const FRIENDS_SCREEN = 'Friends';
 export const HOME_SCREEN = 'Home';
 export const LOGIN_SCREEN = 'Login';
 export const PROFILE_SCREEN = 'Profile';
+export const QUESTION_SUBMIT = 'QuestionSubmit';
 export const QUIZ_RESULTS_SCREEN = 'QuizResults';
 export const QUIZ_RESULTS_LIST_SCREEN = 'QuizResultsList';
 export const TRIVIA_SCREEN = 'Trivia';

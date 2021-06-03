@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
-import { TRIVIA_SCREEN } from 'screens/routes';
+import { QUESTION_SUBMIT, TRIVIA_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
 
 const Home = ({ navigation }) => {
@@ -58,6 +58,14 @@ const Home = ({ navigation }) => {
             </ListItem>
           );
         })}
+        <ListItem
+          onPress={() => navigation.navigate(QUESTION_SUBMIT)}
+          bottomDivider>
+          <ListItem.Content>
+            <ListItem.Title>Submit a Question</ListItem.Title>
+          </ListItem.Content>
+          <ListItem.Chevron color={colors.primaryColor} size={32} />
+        </ListItem>
       </Card>
 
       <Card containerStyle={styles.cardContainer}>
