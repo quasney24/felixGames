@@ -1,45 +1,201 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Avatar, Button, ListItem } from 'react-native-elements';
+import { Avatar, Badge, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
+import * as firebase from 'firebase';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { QUIZ_RESULTS_SCREEN } from 'screens/routes';
-import { logoutUser } from 'functions/auth';
+import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
 import { fetchQuizes } from 'store/reducers/quizes';
-import { getTimeAgo } from 'functions/util';
+import {
+  addFriend,
+  createFriendRequest,
+  deleteFriendRequest,
+  findFriendRequest,
+  removeFriend,
+} from 'functions/friends';
+import { updateUserFriends } from 'store/reducers/user';
+import errorMessages from 'consts/errorMessages';
+import ProfileButtons from './ProfileButtons';
 
-const Profile = ({ navigation }) => {
+const Profile = ({ navigation, route }) => {
+  const { displayName, userId } = route.params;
   const user = useSelector((state) => state.user.user);
   const userQuizes = useSelector((state) => state.quizes.quizes);
   const fetchingQuizes = useSelector((state) => state.quizes.isFetching);
+  const [profile, setProfile] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
+  const [isPendingRequestFor, setIsPendingRequestFor] = useState(false);
+  const [friendRequest, setFriendRequest] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchQuizes());
-  }, [dispatch]);
+    fetchUser();
+  }, []);
+
+  const fetchUser = async () => {
+    if (user !== null) {
+      // return and set profile if viewing user's
+      if (user.uid === userId) {
+        dispatch(fetchQuizes());
+        return setProfile(user);
+      }
+      try {
+        setIsLoading(true);
+        // else retrieve user's profile
+        await firebase
+          .firestore()
+          .collection('users')
+          .where('uid', '==', userId)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach(async (documentSnapshot) => {
+              const u = documentSnapshot.data();
+              setProfile({ id: documentSnapshot.id, ...u });
+
+              // return if friends
+              if (u.friends.filter((f) => f.uid === user.uid).length > 0) {
+                return setIsFriend(true);
+              }
+
+              // return if there is a pending request for viewing user
+              const friendRequestFor = await findFriendRequest(
+                user.uid,
+                userId,
+              );
+              if (friendRequestFor) {
+                setIsPendingRequestFor(true);
+                return setFriendRequest(friendRequestFor);
+              }
+
+              // lastly, check if viewing user has already sent friend request
+              const friendRequestTo = await findFriendRequest(userId, user.uid);
+              console.log(friendRequestTo);
+              if (friendRequestTo) {
+                setFriendRequest(friendRequestTo);
+              }
+            });
+          });
+      } catch (e) {
+        Alert.alert(errorMessages.profileError);
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleFriendRequest = async () => {
+    if (friendRequest) {
+      try {
+        setIsLoading(true);
+        await deleteFriendRequest(friendRequest.id);
+        setFriendRequest();
+      } catch (e) {
+        Alert.alert(errorMessages.friendRequestCancel);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      try {
+        setIsLoading(true);
+        const createdFriendRequest = await createFriendRequest(profile, user);
+        setFriendRequest(createdFriendRequest);
+      } catch (e) {
+        Alert.alert(errorMessages.friendRequestAdd);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleAcceptFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      await deleteFriendRequest(friendRequest.id);
+      setFriendRequest();
+      await addFriend(
+        {
+          id: friendRequest.requestToId,
+          uid: friendRequest.requestTo,
+          displayName: friendRequest.requestToName,
+        },
+        {
+          id: friendRequest.requestFromId,
+          uid: friendRequest.requestFrom,
+          displayName: friendRequest.requestFromName,
+        },
+      );
+      setIsFriend(true);
+      setIsPendingRequestFor(false);
+      dispatch(
+        updateUserFriends([
+          ...user.friends,
+          {
+            uid: friendRequest.requestFrom,
+            displayName: friendRequest.requestFromName,
+          },
+        ]),
+      );
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestAccept);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRejectFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      await deleteFriendRequest(friendRequest.id);
+      setFriendRequest();
+      setIsPendingRequestFor(false);
+    } catch (e) {
+      Alert.alert(errorMessages.friendRequestReject);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    try {
+      setIsLoading(true);
+      await removeFriend(profile, user);
+      dispatch(
+        updateUserFriends(user.friends.filter((u) => u.uid !== profile.uid)),
+      );
+      setIsFriend(false);
+    } catch (e) {
+      Alert.alert(errorMessages.friendRemove);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       {user && (
         <>
           <View style={styles.profileHeader}>
-            {user && user.photoURL ? (
+            {profile && profile.photoURL ? (
               <Avatar
                 overlayContainerStyle={styles.avatar}
                 titleStyle={styles.avatarText}
                 rounded
                 size="large"
                 source={{
-                  uri: user.photoURL,
+                  uri: profile.photoURL,
                 }}
               />
             ) : (
@@ -48,21 +204,24 @@ const Profile = ({ navigation }) => {
                 titleStyle={styles.avatarText}
                 rounded
                 size="large"
-                title={user.displayName ? user.displayName.charAt(0) : ''}
+                title={profile.displayName ? profile.displayName.charAt(0) : ''}
               />
             )}
-            <Text style={styles.userNameText}>{user.displayName}</Text>
-            <View style={styles.logoutButtonContainer}>
-              <Button
-                buttonStyle={styles.logoutButton}
-                titleStyle={{ color: colors.white }}
-                textAlign="center"
-                title="Logout"
-                onPress={async () => {
-                  logoutUser();
-                }}
+            <Text style={styles.userNameText}>{profile.displayName}</Text>
+            {!error && (
+              <ProfileButtons
+                friendRequest={friendRequest}
+                handleAcceptFriendRequest={handleAcceptFriendRequest}
+                handleFriendRequest={handleFriendRequest}
+                handleRejectFriendRequest={handleRejectFriendRequest}
+                handleRemoveFriend={handleRemoveFriend}
+                isFriend={isFriend}
+                isLoading={isLoading}
+                isPendingRequestFor={isPendingRequestFor}
+                profile={profile}
+                user={user}
               />
-            </View>
+            )}
           </View>
           <ScrollView>
             {fetchingQuizes && (
@@ -70,49 +229,56 @@ const Profile = ({ navigation }) => {
                 <ActivityIndicator size="large" color={colors.primaryColor} />
               </View>
             )}
-            {userQuizes.map((quiz, i) => (
-              <ListItem
-                key={i}
-                bottomDivider
-                containerStyle={styles.profileListItem}
-                onPress={() => {
-                  navigation.navigate(QUIZ_RESULTS_SCREEN, {
-                    quizResults: quiz,
-                  });
-                }}>
-                <ListItem.Content>
-                  <ListItem.Title style={{ fontSize: 20 }}>
-                    {quiz.category}
-                  </ListItem.Title>
-                  <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {quiz.difficulty}
-                  </ListItem.Subtitle>
-                  <ListItem.Subtitle style={{ fontSize: 16 }}>
-                    {getTimeAgo(quiz.completed)}
-                  </ListItem.Subtitle>
-                </ListItem.Content>
-                <ListItem.Content style={{ alignItems: 'flex-end' }}>
-                  <ListItem.Title
-                    style={
-                      quiz.correct <= 5
-                        ? { ...styles.resultText, ...styles.failText }
-                        : quiz.correct <= 7
-                        ? { ...styles.resultText, ...styles.averageText }
-                        : { ...styles.resultText, ...styles.passText }
-                    }>
-                    {quiz.correct} / {quiz.questions.length}
-                  </ListItem.Title>
-                </ListItem.Content>
-                <ListItem.Chevron
-                  size={35}
-                  name={
-                    Platform.OS === 'ios'
-                      ? 'ios-arrow-forward'
-                      : 'chevron-right'
-                  }
-                />
-              </ListItem>
-            ))}
+            {!fetchingQuizes && user.uid === profile.uid && (
+              <>
+                <ListItem
+                  bottomDivider
+                  containerStyle={styles.profileListItem}
+                  onPress={() => {
+                    navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
+                  }}>
+                  <ListItem.Content>
+                    <ListItem.Title style={{ fontSize: 20 }}>
+                      Quizzes
+                    </ListItem.Title>
+                  </ListItem.Content>
+                  <ListItem.Content style={{ alignItems: 'flex-end' }}>
+                    <Badge
+                      value={userQuizes.length}
+                      badgeStyle={styles.listItemBadge}
+                    />
+                  </ListItem.Content>
+                  <ListItem.Chevron
+                    size={35}
+                    name={
+                      Platform.OS === 'ios'
+                        ? 'ios-arrow-forward'
+                        : 'chevron-right'
+                    }
+                  />
+                </ListItem>
+                <ListItem
+                  bottomDivider
+                  containerStyle={styles.profileListItem}
+                  onPress={() => {
+                    navigation.navigate(FRIENDS_SCREEN);
+                  }}>
+                  <ListItem.Content>
+                    <ListItem.Title style={{ fontSize: 20 }}>
+                      Friends
+                    </ListItem.Title>
+                  </ListItem.Content>
+                  <ListItem.Chevron
+                    size={35}
+                    name={
+                      Platform.OS === 'ios'
+                        ? 'ios-arrow-forward'
+                        : 'chevron-right'
+                    }
+                  />
+                </ListItem>
+              </>
+            )}
           </ScrollView>
         </>
       )}
@@ -140,12 +306,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  logoutButtonContainer: {
-    marginTop: 10,
-  },
-  logoutButton: {
-    backgroundColor: colors.primaryColor,
-  },
   summaryContainer: {
     textAlign: 'center',
     alignItems: 'center',
@@ -168,6 +328,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     textTransform: 'capitalize',
+  },
+  listItemBadge: {
+    backgroundColor: colors.primaryColor,
+    minHeight: 35,
+    minWidth: 35,
+    borderRadius: 50,
+    padding: 5,
+    borderWidth: 0,
   },
 });
 

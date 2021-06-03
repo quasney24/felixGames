@@ -4,13 +4,19 @@ import { useSelector } from 'react-redux';
 
 import defaultOptions from 'stacks/default-options';
 import {
+  FRIENDS_SCREEN,
   LOGIN_SCREEN,
   PROFILE_SCREEN,
   QUIZ_RESULTS_SCREEN,
+  QUIZ_RESULTS_LIST_SCREEN,
+  USER_SEARCH_SCREEN,
 } from 'screens/routes';
+import Friends from 'screens/Friends';
 import Login from 'screens/Login';
 import Profile from 'screens/Profile';
 import QuizResults from 'screens/QuizResults';
+import QuizResultsList from 'screens/QuizResultsList';
+import UserSearch from 'screens/UserSearch';
 
 const Stack = createStackNavigator();
 
@@ -42,11 +48,35 @@ export default function ProfileStack() {
         />
       )}
       <Stack.Screen
+        name={QUIZ_RESULTS_LIST_SCREEN}
+        component={QuizResultsList}
+        options={{
+          ...defaultOptions,
+          title: 'Quizzes',
+        }}
+      />
+      <Stack.Screen
         name={QUIZ_RESULTS_SCREEN}
         component={QuizResults}
         options={{
           ...defaultOptions,
           title: 'Quiz Results',
+        }}
+      />
+      <Stack.Screen
+        name={FRIENDS_SCREEN}
+        component={Friends}
+        options={{
+          ...defaultOptions,
+          title: 'Friends',
+        }}
+      />
+      <Stack.Screen
+        name={USER_SEARCH_SCREEN}
+        component={UserSearch}
+        options={{
+          ...defaultOptions,
+          title: 'Find User',
         }}
       />
     </Stack.Navigator>

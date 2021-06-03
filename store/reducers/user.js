@@ -1,5 +1,6 @@
 const SET_USER = 'SET_USER';
 const SET_AUTH_LOADING = 'SET_AUTH_LOADING';
+const UPDATE_USER_FRIENDS = 'UPDATE_USER_FRIENDS';
 
 const INITIAL_STATE = {
   user: null,
@@ -19,6 +20,14 @@ export default function userReducer(state = INITIAL_STATE, action) {
         ...state,
         authInitializing: action.authInitializing,
       };
+    case UPDATE_USER_FRIENDS:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          friends: action.friends,
+        },
+      };
     default:
       return state;
   }
@@ -35,5 +44,12 @@ export function setAuthInitializing(authInitializing) {
   return {
     type: SET_AUTH_LOADING,
     authInitializing,
+  };
+}
+
+export function updateUserFriends(friends) {
+  return {
+    type: UPDATE_USER_FRIENDS,
+    friends,
   };
 }

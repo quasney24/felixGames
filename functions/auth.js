@@ -19,8 +19,7 @@ export const registerUser = async (email, password, username) => {
         uid: registeredUser.uid,
         displayName: username,
         lowercaseDisplayName: username.toLowerCase(),
-        followers: [],
-        following: [],
+        friends: [],
       })
       .then(() => {});
     firebase
