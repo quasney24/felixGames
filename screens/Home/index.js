@@ -63,6 +63,7 @@ const Home = ({ navigation }) => {
           bottomDivider>
           <ListItem.Content>
             <ListItem.Title>Submit a Question</ListItem.Title>
+            <ListItem.Subtitle>Contribute your knowledge!</ListItem.Subtitle>
           </ListItem.Content>
           <ListItem.Chevron color={colors.primaryColor} size={32} />
         </ListItem>

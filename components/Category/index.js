@@ -1,7 +1,6 @@
 import colors from 'consts/colors';
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 const Category = ({ data, getId }) => {
   return (
@@ -10,13 +9,12 @@ const Category = ({ data, getId }) => {
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((value) => {
           return (
-            <View key={value.id}>
-              <TouchableOpacity
-                style={styles.wrapper}
-                onPress={() => getId(value.id)}>
-                <Text style={styles.text}>{value.name}</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              key={value.id}
+              style={styles.wrapper}
+              onPress={() => getId(value.id)}>
+              <Text style={styles.text}>{value.name}</Text>
+            </TouchableOpacity>
           );
         })}
     </View>
