@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { BottomSheet, Button, Input, Text } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -7,11 +13,19 @@ import Category from 'components/Category';
 import colors from 'consts/colors';
 import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import QuizSettingSelction from 'components/QuizSettingSelction';
+import { saveQuestion } from 'functions/questions';
 
 const QuestionSubmit = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState();
   const [difficulty, setDifficulty] = useState();
+  const [question, setQuestion] = useState();
+  const [correctAnswer, setCorrectAnswer] = useState();
+  const [incorrectAnswer1, setIncorrectAnswer1] = useState();
+  const [incorrectAnswer2, setIncorrectAnswer2] = useState();
+  const [incorrectAnswer3, setIncorrectAnswer3] = useState();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const user = useSelector((state) => state.user.user);
   const categories = useSelector((state) => state.quizCategories.categories);
   const dispatch = useDispatch();
 
@@ -20,6 +34,22 @@ const QuestionSubmit = ({ navigation }) => {
       dispatch(fetchQuizCategories());
     }
   }, []);
+
+  const handleQuestionSubmit = () => {
+    setLoading(true);
+    const saveSucess = saveQuestion({
+      category,
+      difficulty,
+      question,
+      correctAnswer,
+      incorrectAnswers: [incorrectAnswer1, incorrectAnswer2, incorrectAnswer3],
+      uid: user.uid,
+    });
+    setLoading(false);
+    if (saveSucess) {
+      navigation.goBack();
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -50,13 +80,26 @@ const QuestionSubmit = ({ navigation }) => {
           }}
         />
         <Text style={styles.inputTitle}>Question</Text>
-        <Input containerStyle={styles.inputContainer} value="" multiline />
+        <Input multiline={true} value={question} onChangeText={setQuestion} />
         <Text style={styles.inputTitle}>Correct Answer</Text>
-        <Input containerStyle={styles.inputContainer} value="" />
+        <Input value={correctAnswer} onChangeText={setCorrectAnswer} />
         <Text style={styles.inputTitle}>Incorrect Answers</Text>
-        <Input containerStyle={styles.inputContainer} value="" />
-        <Input containerStyle={styles.inputContainer} value="" />
-        <Input containerStyle={styles.inputContainer} value="" />
+        <Input value={incorrectAnswer1} onChangeText={setIncorrectAnswer1} />
+        <Input value={incorrectAnswer2} onChangeText={setIncorrectAnswer2} />
+        <Input value={incorrectAnswer3} onChangeText={setIncorrectAnswer3} />
+        {!loading && (
+          <Button
+            buttonStyle={styles.submitButton}
+            textAlign="center"
+            title="Submit"
+            onPress={handleQuestionSubmit}
+          />
+        )}
+        {loading && (
+          <View style={styles.loadingSpinner}>
+            <ActivityIndicator size="large" color={colors.primaryColor} />
+          </View>
+        )}
       </View>
       <BottomSheet
         modalProps={{ visible: showBottomSheet }}
@@ -104,7 +147,6 @@ const styles = StyleSheet.create({
   },
   inputTitle: {
     fontSize: 18,
-    marginLeft: 5,
   },
   bottomSheetContainer: {
     backgroundColor: colors.white,
@@ -119,6 +161,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 30,
     fontWeight: 'bold',
+  },
+  submitButton: {
+    backgroundColor: colors.primaryColor,
+    borderColor: colors.primaryColor,
+    borderWidth: 2,
+    borderRadius: 20,
+    marginTop: 20,
+    marginBottom: 40,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    width: '50%',
   },
 });
 

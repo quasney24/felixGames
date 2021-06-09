@@ -9,12 +9,14 @@ const Category = ({ data, getId }) => {
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((value) => {
           return (
-            <TouchableOpacity
-              key={value.id}
-              style={styles.wrapper}
-              onPress={() => getId(value.id)}>
-              <Text style={styles.text}>{value.name}</Text>
-            </TouchableOpacity>
+            <View key={value.id}>
+              <TouchableOpacity
+                key={value.id}
+                style={styles.wrapper}
+                onPress={() => getId(value.id)}>
+                <Text style={styles.text}>{value.name}</Text>
+              </TouchableOpacity>
+            </View>
           );
         })}
     </View>
