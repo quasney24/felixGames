@@ -39,6 +39,7 @@ export const saveQuestion = async ({
         correctAnswer,
         incorrectAnswers,
         uid,
+        status: 'Review',
       })
       .then(() => {
         Alert.alert(

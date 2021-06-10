@@ -14,7 +14,6 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 
 import colors from 'consts/colors';
-import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
 import { fetchQuizes } from 'store/reducers/quizes';
 import {
   addFriend,
@@ -26,6 +25,7 @@ import {
 import { updateUserFriends } from 'store/reducers/user';
 import errorMessages from 'consts/errorMessages';
 import ProfileButtons from './ProfileButtons';
+import { profileMenuOptions } from 'functions/menuOptions';
 
 const Profile = ({ navigation, route }) => {
   const { displayName, userId } = route.params;
@@ -231,52 +231,37 @@ const Profile = ({ navigation, route }) => {
             )}
             {!fetchingQuizes && user.uid === profile.uid && (
               <>
-                <ListItem
-                  bottomDivider
-                  containerStyle={styles.profileListItem}
-                  onPress={() => {
-                    navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
-                  }}>
-                  <ListItem.Content>
-                    <ListItem.Title style={{ fontSize: 20 }}>
-                      Quizzes
-                    </ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Content style={{ alignItems: 'flex-end' }}>
-                    <Badge
-                      value={userQuizes.length}
-                      badgeStyle={styles.listItemBadge}
+                {profileMenuOptions.map((option) => (
+                  <ListItem
+                    key={option.title}
+                    bottomDivider
+                    containerStyle={styles.profileListItem}
+                    onPress={() => {
+                      navigation.navigate(option.navigation);
+                    }}>
+                    <ListItem.Content>
+                      <ListItem.Title style={{ fontSize: 20 }}>
+                        {option.title}
+                      </ListItem.Title>
+                    </ListItem.Content>
+                    {option.title === 'Quizzes' && (
+                      <ListItem.Content style={{ alignItems: 'flex-end' }}>
+                        <Badge
+                          value={userQuizes.length}
+                          badgeStyle={styles.listItemBadge}
+                        />
+                      </ListItem.Content>
+                    )}
+                    <ListItem.Chevron
+                      size={35}
+                      name={
+                        Platform.OS === 'ios'
+                          ? 'ios-arrow-forward'
+                          : 'chevron-right'
+                      }
                     />
-                  </ListItem.Content>
-                  <ListItem.Chevron
-                    size={35}
-                    name={
-                      Platform.OS === 'ios'
-                        ? 'ios-arrow-forward'
-                        : 'chevron-right'
-                    }
-                  />
-                </ListItem>
-                <ListItem
-                  bottomDivider
-                  containerStyle={styles.profileListItem}
-                  onPress={() => {
-                    navigation.navigate(FRIENDS_SCREEN);
-                  }}>
-                  <ListItem.Content>
-                    <ListItem.Title style={{ fontSize: 20 }}>
-                      Friends
-                    </ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Chevron
-                    size={35}
-                    name={
-                      Platform.OS === 'ios'
-                        ? 'ios-arrow-forward'
-                        : 'chevron-right'
-                    }
-                  />
-                </ListItem>
+                  </ListItem>
+                ))}
               </>
             )}
           </ScrollView>

@@ -1,6 +1,7 @@
 export const FRIENDS_SCREEN = 'Friends';
 export const HOME_SCREEN = 'Home';
 export const LOGIN_SCREEN = 'Login';
+export const MY_QUESTIONS_SCREEN = 'MyQuestions';
 export const PROFILE_SCREEN = 'Profile';
 export const QUESTION_SUBMIT = 'QuestionSubmit';
 export const QUIZ_RESULTS_SCREEN = 'QuizResults';

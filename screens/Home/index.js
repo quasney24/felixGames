@@ -2,22 +2,10 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
-import { QUESTION_SUBMIT, TRIVIA_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
+import { homeMenuOptions } from 'functions/menuOptions';
 
 const Home = ({ navigation }) => {
-  //@TODO refactor app to build factory pattern style utilizing classes for game types
-  const triviaOptions = [
-    {
-      type: 'Accuracy',
-      subType: 'Get them all Right!',
-    },
-    {
-      type: 'Speed',
-      subType: 'Better go fast!',
-    },
-  ];
-
   return (
     <View style={styles.container}>
       <Card containerStyle={{ ...styles.cardContainer, ...styles.welcomeCard }}>
@@ -43,30 +31,18 @@ const Home = ({ navigation }) => {
           Trivia
         </Card.Title>
         <Card.Divider style={styles.cardDivider} />
-        {triviaOptions.map((l, i) => {
-          console.log(l);
-          return (
-            <ListItem
-              key={l.type}
-              onPress={() => navigation.navigate(TRIVIA_SCREEN)}
-              bottomDivider>
-              <ListItem.Content>
-                <ListItem.Title>{l.type}</ListItem.Title>
-                <ListItem.Subtitle>{l.subType}</ListItem.Subtitle>
-              </ListItem.Content>
-              <ListItem.Chevron color={colors.primaryColor} size={32} />
-            </ListItem>
-          );
-        })}
-        <ListItem
-          onPress={() => navigation.navigate(QUESTION_SUBMIT)}
-          bottomDivider>
-          <ListItem.Content>
-            <ListItem.Title>Submit a Question</ListItem.Title>
-            <ListItem.Subtitle>Contribute your knowledge!</ListItem.Subtitle>
-          </ListItem.Content>
-          <ListItem.Chevron color={colors.primaryColor} size={32} />
-        </ListItem>
+        {homeMenuOptions.map((option) => (
+          <ListItem
+            key={option.title}
+            onPress={() => navigation.navigate(option.navigation)}
+            bottomDivider>
+            <ListItem.Content>
+              <ListItem.Title>{option.title}</ListItem.Title>
+              <ListItem.Subtitle>{option.subtitle}</ListItem.Subtitle>
+            </ListItem.Content>
+            <ListItem.Chevron color={colors.primaryColor} size={32} />
+          </ListItem>
+        ))}
       </Card>
 
       <Card containerStyle={styles.cardContainer}>
