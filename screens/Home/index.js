@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
 import colors from 'consts/colors';
-import { homeMenuOptions } from 'functions/menuOptions';
+import { homeMenuOptions } from 'consts/menuOptions';
 
 const Home = ({ navigation }) => {
   return (

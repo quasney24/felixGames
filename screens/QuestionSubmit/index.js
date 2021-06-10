@@ -15,7 +15,8 @@ import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import QuizSettingSelction from 'components/QuizSettingSelction';
 import { saveQuestion } from 'functions/questions';
 
-const QuestionSubmit = ({ navigation }) => {
+const QuestionSubmit = ({ navigation, route }) => {
+  const { submission, isReview } = route.params;
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState();
   const [difficulty, setDifficulty] = useState();
@@ -32,6 +33,15 @@ const QuestionSubmit = ({ navigation }) => {
   useEffect(() => {
     if (categories.length === 0) {
       dispatch(fetchQuizCategories());
+    }
+    if (submission) {
+      setCategory(submission.category);
+      setDifficulty(submission.difficulty);
+      setQuestion(submission.question);
+      setCorrectAnswer(submission.correctAnswer);
+      setIncorrectAnswer1(submission.incorrectAnswers[0]);
+      setIncorrectAnswer2(submission.incorrectAnswers[1]);
+      setIncorrectAnswer3(submission.incorrectAnswers[2]);
     }
   }, []);
 
@@ -87,7 +97,7 @@ const QuestionSubmit = ({ navigation }) => {
         <Input value={incorrectAnswer1} onChangeText={setIncorrectAnswer1} />
         <Input value={incorrectAnswer2} onChangeText={setIncorrectAnswer2} />
         <Input value={incorrectAnswer3} onChangeText={setIncorrectAnswer3} />
-        {!loading && (
+        {!loading && !isReview && (
           <Button
             buttonStyle={styles.submitButton}
             textAlign="center"

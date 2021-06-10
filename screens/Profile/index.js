@@ -25,7 +25,8 @@ import {
 import { updateUserFriends } from 'store/reducers/user';
 import errorMessages from 'consts/errorMessages';
 import ProfileButtons from './ProfileButtons';
-import { profileMenuOptions } from 'functions/menuOptions';
+import { profileMenuOptions } from 'consts/menuOptions';
+import { QUESTION_SUBMIT } from 'screens/routes';
 
 const Profile = ({ navigation, route }) => {
   const { displayName, userId } = route.params;
@@ -42,6 +43,7 @@ const Profile = ({ navigation, route }) => {
 
   useEffect(() => {
     fetchUser();
+    console.log(user);
   }, [dispatch]);
 
   const fetchUser = async () => {
@@ -262,6 +264,44 @@ const Profile = ({ navigation, route }) => {
                     />
                   </ListItem>
                 ))}
+                {user.admin && (
+                  <ListItem
+                    bottomDivider
+                    containerStyle={styles.profileListItem}
+                    onPress={async () => {
+                      await firebase
+                        .firestore()
+                        .collection('questionSubmissions')
+                        .where('status', '==', 'Review')
+                        .limit(1)
+                        .get()
+                        .then((querySnapshot) => {
+                          querySnapshot.forEach(async (documentSnapshot) => {
+                            navigation.navigate(QUESTION_SUBMIT, {
+                              isReview: true,
+                              submission: {
+                                ...documentSnapshot.data(),
+                                id: documentSnapshot.id,
+                              },
+                            });
+                          });
+                        });
+                    }}>
+                    <ListItem.Content>
+                      <ListItem.Title style={{ fontSize: 20 }}>
+                        Review a Question
+                      </ListItem.Title>
+                    </ListItem.Content>
+                    <ListItem.Chevron
+                      size={35}
+                      name={
+                        Platform.OS === 'ios'
+                          ? 'ios-arrow-forward'
+                          : 'chevron-right'
+                      }
+                    />
+                  </ListItem>
+                )}
               </>
             )}
           </ScrollView>

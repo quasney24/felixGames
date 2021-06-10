@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import { Alert, Dimensions, StyleSheet, View } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useSelector } from 'react-redux';
-import * as firebase from 'firebase';
-import 'firebase/firestore';
 
 import colors from 'consts/colors';
 import MyQuestionsList from './MyQuestionsList';
+import { getMyQuestions } from 'functions/questions';
+import errorMessages from 'consts/errorMessages';
 
 const initialLayout = { width: Dimensions.get('window').width };
 
@@ -28,21 +28,9 @@ const MyQuestions = ({ navigation }) => {
   const fetchMyQuestions = async () => {
     try {
       setIsLoading(true);
-      await firebase
-        .firestore()
-        .collection('questionSubmissions')
-        .where('uid', '==', user.uid)
-        .get()
-        .then((querySnapshot) => {
-          const questions = [];
-          querySnapshot.forEach(async (documentSnapshot) => {
-            const q = documentSnapshot.data();
-            questions.push({ id: documentSnapshot.id, ...q });
-          });
-          setMyQuestions(questions);
-        });
-    } catch (e) {
-      Alert.alert('Error');
+      setMyQuestions(await getMyQuestions(user.uid));
+    } catch {
+      Alert.alert(errorMessages.myQuestionsError);
     } finally {
       setIsLoading(false);
     }

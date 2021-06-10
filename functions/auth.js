@@ -17,6 +17,7 @@ export const registerUser = async (email, password, username) => {
         creationTime: registeredUser.metadata.creationTime,
         photoURL: registeredUser.photoURL,
         uid: registeredUser.uid,
+        admin: false,
         displayName: username,
         lowercaseDisplayName: username.toLowerCase(),
         friends: [],

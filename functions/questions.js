@@ -40,6 +40,7 @@ export const saveQuestion = async ({
         incorrectAnswers,
         uid,
         status: 'Review',
+        createdDate: Date.now(),
       })
       .then(() => {
         Alert.alert(
@@ -50,4 +51,20 @@ export const saveQuestion = async ({
   } catch (e) {
     Alert.alert('Please provide 3 incorrect answers.');
   }
+};
+
+export const getMyQuestions = async (uid) => {
+  return await firebase
+    .firestore()
+    .collection('questionSubmissions')
+    .where('uid', '==', uid)
+    .get()
+    .then((querySnapshot) => {
+      const questions = [];
+      querySnapshot.forEach(async (documentSnapshot) => {
+        const q = documentSnapshot.data();
+        questions.push({ id: documentSnapshot.id, ...q });
+      });
+      return questions;
+    });
 };
