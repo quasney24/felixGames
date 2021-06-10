@@ -1,20 +1,19 @@
-import React from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Alert, Dimensions, StyleSheet, View } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { useSelector } from 'react-redux';
+import * as firebase from 'firebase';
+import 'firebase/firestore';
 
 import colors from 'consts/colors';
+import MyQuestionsList from './MyQuestionsList';
 
 const initialLayout = { width: Dimensions.get('window').width };
 
-const FirstRoute = () => (
-  <View style={{ flex: 1, backgroundColor: '#ff4081' }} />
-);
-
-const SecondRoute = () => (
-  <View style={{ flex: 1, backgroundColor: '#673ab7' }} />
-);
-
 const MyQuestions = ({ navigation }) => {
+  const user = useSelector((state) => state.user.user);
+  const [myQuestions, setMyQuestions] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     { key: 'pending', title: 'Pending' },
@@ -22,10 +21,61 @@ const MyQuestions = ({ navigation }) => {
     { key: 'declined', title: 'Declined' },
   ]);
 
+  useEffect(() => {
+    fetchMyQuestions();
+  }, [user]);
+
+  const fetchMyQuestions = async () => {
+    try {
+      setIsLoading(true);
+      await firebase
+        .firestore()
+        .collection('questionSubmissions')
+        .where('uid', '==', user.uid)
+        .get()
+        .then((querySnapshot) => {
+          const questions = [];
+          querySnapshot.forEach(async (documentSnapshot) => {
+            const q = documentSnapshot.data();
+            questions.push({ id: documentSnapshot.id, ...q });
+          });
+          setMyQuestions(questions);
+        });
+    } catch (e) {
+      Alert.alert('Error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const Pending = () => (
+    <MyQuestionsList
+      questions={myQuestions.filter((q) => q.status === 'Review')}
+      isLoading={isLoading}
+      status="pending"
+    />
+  );
+
+  const Accepted = () => (
+    <MyQuestionsList
+      questions={myQuestions.filter((q) => q.status === 'Accepted')}
+      isLoading={isLoading}
+      status="accepted"
+    />
+  );
+
+  const Declined = () => (
+    <MyQuestionsList
+      questions={myQuestions.filter((q) => q.status === 'Declined')}
+      isLoading={isLoading}
+      status="declined"
+    />
+  );
+
   const renderScene = SceneMap({
-    pending: FirstRoute,
-    accepted: SecondRoute,
-    declined: FirstRoute,
+    pending: Pending,
+    accepted: Accepted,
+    declined: Declined,
   });
 
   const renderTabBar = (props) => (
@@ -38,19 +88,22 @@ const MyQuestions = ({ navigation }) => {
   );
 
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={renderScene}
-      onIndexChange={setIndex}
-      initialLayout={initialLayout}
-      renderTabBar={renderTabBar}
-    />
+    <View style={styles.container}>
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={initialLayout}
+        renderTabBar={renderTabBar}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scene: {
+  container: {
     flex: 1,
+    backgroundColor: colors.white,
   },
   tabBarStyle: {
     backgroundColor: colors.primaryColor,
