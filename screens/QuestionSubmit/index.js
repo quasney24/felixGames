@@ -6,27 +6,32 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { BottomSheet, Button, Input, Text } from 'react-native-elements';
+import { Alert, BottomSheet, Button, Input, Text } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Category from 'components/Category';
-import colors from 'consts/colors';
-import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import QuizSettingSelction from 'components/QuizSettingSelction';
-import { saveQuestion } from 'functions/questions';
+import colors from 'consts/colors';
+import errorMessages from 'consts/errorMessages';
+import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import { PROFILE_SCREEN } from 'screens/routes';
+import {
+  approveQuestion,
+  denyQuestion,
+  saveQuestion,
+} from 'functions/questions';
 
 const QuestionSubmit = ({ navigation, route }) => {
   const { isReview, submission } = route.params;
   const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState();
-  const [difficulty, setDifficulty] = useState();
-  const [question, setQuestion] = useState();
-  const [correctAnswer, setCorrectAnswer] = useState();
-  const [incorrectAnswer1, setIncorrectAnswer1] = useState();
-  const [incorrectAnswer2, setIncorrectAnswer2] = useState();
-  const [incorrectAnswer3, setIncorrectAnswer3] = useState();
-  const [notes, setNotes] = useState();
+  const [category, setCategory] = useState('');
+  const [difficulty, setDifficulty] = useState('');
+  const [question, setQuestion] = useState('');
+  const [correctAnswer, setCorrectAnswer] = useState('');
+  const [incorrectAnswer1, setIncorrectAnswer1] = useState('');
+  const [incorrectAnswer2, setIncorrectAnswer2] = useState('');
+  const [incorrectAnswer3, setIncorrectAnswer3] = useState('');
+  const [notes, setNotes] = useState('');
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const user = useSelector((state) => state.user.user);
   const categories = useSelector((state) => state.quizCategories.categories);
@@ -47,20 +52,100 @@ const QuestionSubmit = ({ navigation, route }) => {
     }
   }, []);
 
-  const handleQuestionSubmit = () => {
-    setLoading(true);
-    const saveSucess = saveQuestion({
-      category,
-      difficulty,
-      question,
-      correctAnswer,
-      incorrectAnswers: [incorrectAnswer1, incorrectAnswer2, incorrectAnswer3],
-      user,
-    });
-    setLoading(false);
-    if (saveSucess) {
-      navigation.goBack();
+  const handleQuestionSubmit = async () => {
+    try {
+      setLoading(true);
+      const incorrectAnswers = [
+        incorrectAnswer1,
+        incorrectAnswer2,
+        incorrectAnswer3,
+      ];
+      const isValid = validateForm(incorrectAnswers);
+      if (isValid) {
+        await saveQuestion({
+          category,
+          difficulty,
+          question,
+          correctAnswer,
+          incorrectAnswers,
+          user,
+        });
+        navigation.goBack();
+      }
+    } catch (e) {
+      Alert.alert(errorMessages.questionSubmit);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleApprove = async () => {
+    try {
+      setLoading(true);
+      const incorrectAnswers = [
+        incorrectAnswer1,
+        incorrectAnswer2,
+        incorrectAnswer3,
+      ];
+      const isValid = validateForm(incorrectAnswers);
+      if (isValid) {
+        await approveQuestion({
+          id: submission.id,
+          category,
+          difficulty,
+          question,
+          correctAnswer,
+          incorrectAnswers,
+          uid: submission.uid,
+          userDisplayName: submission.userDisplayName,
+          notes,
+        });
+      }
+    } catch (e) {
+      Alert.alert(errorMessages.questionApprove);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeny = async () => {
+    try {
+      setLoading(true);
+      await denyQuestion(submission.id);
+    } catch (e) {
+      Alert.alert(errorMessages.questionDeny);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateForm = (incorrectAnswers) => {
+    let isValid = true;
+    if (!category) {
+      isValid = false;
+      Alert.alert('Please select a category.');
+    }
+    if (!difficulty) {
+      isValid = false;
+      Alert.alert('Please select a difficulty.');
+    }
+    if (!question) {
+      isValid = false;
+      Alert.alert('Please provide the question prompt.');
+    }
+    if (!correctAnswer) {
+      isValid = false;
+      Alert.alert('Please provide the correct answer.');
+    }
+    console.log(incorrectAnswers);
+    incorrectAnswers.forEach((q) => {
+      if (q.length === 0 || q === undefined) {
+        console.log(q);
+        isValid = false;
+        Alert.alert('Please provide 3 incorrect answers.');
+      }
+    });
+    return isValid;
   };
 
   return (
@@ -68,14 +153,14 @@ const QuestionSubmit = ({ navigation, route }) => {
       <View style={styles.form}>
         <Text style={styles.inputTitle}>Category</Text>
         <View style={{ marginVertical: 15 }}>
-          {category && (
+          {category.length !== 0 && (
             <TouchableOpacity
               style={styles.wrapper}
               onPress={() => setShowBottomSheet(true)}>
               <Text style={styles.text}>{category}</Text>
             </TouchableOpacity>
           )}
-          {!category && (
+          {category.length === 0 && (
             <Button
               buttonStyle={styles.wrapper}
               title="Select"
@@ -141,7 +226,7 @@ const QuestionSubmit = ({ navigation, route }) => {
                 }}
                 textAlign="center"
                 title="Deny"
-                onPress={() => {}}
+                onPress={handleDeny}
               />
             </View>
             <View style={{ width: '50%' }}>
@@ -152,7 +237,7 @@ const QuestionSubmit = ({ navigation, route }) => {
                 }}
                 textAlign="center"
                 title="Approve"
-                onPress={() => {}}
+                onPress={handleApprove}
               />
             </View>
           </View>
