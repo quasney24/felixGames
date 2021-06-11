@@ -14,9 +14,10 @@ import colors from 'consts/colors';
 import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import QuizSettingSelction from 'components/QuizSettingSelction';
 import { saveQuestion } from 'functions/questions';
+import { PROFILE_SCREEN } from 'screens/routes';
 
 const QuestionSubmit = ({ navigation, route }) => {
-  const { submission, isReview } = route.params;
+  const { isReview, submission } = route.params;
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState();
   const [difficulty, setDifficulty] = useState();
@@ -25,6 +26,7 @@ const QuestionSubmit = ({ navigation, route }) => {
   const [incorrectAnswer1, setIncorrectAnswer1] = useState();
   const [incorrectAnswer2, setIncorrectAnswer2] = useState();
   const [incorrectAnswer3, setIncorrectAnswer3] = useState();
+  const [notes, setNotes] = useState();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const user = useSelector((state) => state.user.user);
   const categories = useSelector((state) => state.quizCategories.categories);
@@ -34,7 +36,7 @@ const QuestionSubmit = ({ navigation, route }) => {
     if (categories.length === 0) {
       dispatch(fetchQuizCategories());
     }
-    if (submission) {
+    if (isReview) {
       setCategory(submission.category);
       setDifficulty(submission.difficulty);
       setQuestion(submission.question);
@@ -53,7 +55,7 @@ const QuestionSubmit = ({ navigation, route }) => {
       question,
       correctAnswer,
       incorrectAnswers: [incorrectAnswer1, incorrectAnswer2, incorrectAnswer3],
-      uid: user.uid,
+      user,
     });
     setLoading(false);
     if (saveSucess) {
@@ -90,20 +92,70 @@ const QuestionSubmit = ({ navigation, route }) => {
           }}
         />
         <Text style={styles.inputTitle}>Question</Text>
-        <Input multiline={true} value={question} onChangeText={setQuestion} />
+        <Input multiline value={question} onChangeText={setQuestion} />
         <Text style={styles.inputTitle}>Correct Answer</Text>
         <Input value={correctAnswer} onChangeText={setCorrectAnswer} />
         <Text style={styles.inputTitle}>Incorrect Answers</Text>
         <Input value={incorrectAnswer1} onChangeText={setIncorrectAnswer1} />
         <Input value={incorrectAnswer2} onChangeText={setIncorrectAnswer2} />
         <Input value={incorrectAnswer3} onChangeText={setIncorrectAnswer3} />
+        {isReview && (
+          <>
+            <Text style={styles.inputTitle}>Notes</Text>
+            <Input multiline value={notes} onChangeText={setNotes} />
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.inputTitle}>Submitted by: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.push(PROFILE_SCREEN, {
+                    displayName: submission.userDisplayName,
+                    userId: submission.uid,
+                  })
+                }>
+                <Text style={{ ...styles.inputTitle, color: 'blue' }}>
+                  {submission.userDisplayName}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
         {!loading && !isReview && (
-          <Button
-            buttonStyle={styles.submitButton}
-            textAlign="center"
-            title="Submit"
-            onPress={handleQuestionSubmit}
-          />
+          <View style={styles.buttonContainer}>
+            <View style={{ width: '50%' }}>
+              <Button
+                buttonStyle={{ ...styles.button, ...styles.submitButton }}
+                textAlign="center"
+                title="Submit"
+                onPress={handleQuestionSubmit}
+              />
+            </View>
+          </View>
+        )}
+        {!loading && isReview && (
+          <View style={styles.buttonContainer}>
+            <View style={{ width: '50%' }}>
+              <Button
+                buttonStyle={{
+                  ...styles.button,
+                  ...styles.rejectButton,
+                }}
+                textAlign="center"
+                title="Deny"
+                onPress={() => {}}
+              />
+            </View>
+            <View style={{ width: '50%' }}>
+              <Button
+                buttonStyle={{
+                  ...styles.button,
+                  ...styles.submitButton,
+                }}
+                textAlign="center"
+                title="Approve"
+                onPress={() => {}}
+              />
+            </View>
+          </View>
         )}
         {loading && (
           <View style={styles.loadingSpinner}>
@@ -172,16 +224,27 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    marginBottom: 40,
+    marginTop: 20,
+    justifyContent: 'space-evenly',
+  },
+  button: {
+    borderWidth: 2,
+    borderRadius: 20,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
   submitButton: {
     backgroundColor: colors.primaryColor,
     borderColor: colors.primaryColor,
-    borderWidth: 2,
-    borderRadius: 20,
-    marginTop: 20,
-    marginBottom: 40,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: '50%',
+    width: '80%',
+  },
+  rejectButton: {
+    backgroundColor: colors.incorrect,
+    borderColor: colors.incorrect,
+    width: '80%',
   },
 });
 

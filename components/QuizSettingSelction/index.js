@@ -7,6 +7,7 @@ const QuizSettingSelction = ({ values, selectedValue, setSelectedValue }) => {
     <View style={styles.container}>
       {values.map((v) => (
         <TouchableOpacity
+          key={v}
           style={
             selectedValue === v
               ? { ...styles.box, ...styles.activeBox }

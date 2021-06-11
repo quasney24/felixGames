@@ -8,7 +8,7 @@ export const saveQuestion = async ({
   question,
   correctAnswer,
   incorrectAnswers,
-  uid,
+  user,
 }) => {
   try {
     if (!category) {
@@ -38,7 +38,8 @@ export const saveQuestion = async ({
         question,
         correctAnswer,
         incorrectAnswers,
-        uid,
+        uid: user.uid,
+        userDisplayName: user.displayName,
         status: 'Review',
         createdDate: Date.now(),
       })

@@ -11,16 +11,19 @@ export const homeMenuOptions = [
     title: 'Accuracy',
     subtitle: 'Get them all Right!',
     navigation: TRIVIA_SCREEN,
+    params: {},
   },
   {
     title: 'Speed',
     subtitle: 'Better go fast!',
     navigation: TRIVIA_SCREEN,
+    params: {},
   },
   {
     title: 'Submit a Question',
     subtitle: 'Contribute your knowledge!',
     navigation: QUESTION_SUBMIT,
+    params: { isReview: false },
   },
 ];
 

@@ -34,7 +34,9 @@ const Home = ({ navigation }) => {
         {homeMenuOptions.map((option) => (
           <ListItem
             key={option.title}
-            onPress={() => navigation.navigate(option.navigation)}
+            onPress={() =>
+              navigation.navigate(option.navigation, option.params)
+            }
             bottomDivider>
             <ListItem.Content>
               <ListItem.Title>{option.title}</ListItem.Title>
