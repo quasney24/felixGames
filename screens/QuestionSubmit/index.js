@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { Alert, BottomSheet, Button, Input, Text } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
+import * as firebase from 'firebase';
+import 'firebase/firestore';
 
 import Category from 'components/Category';
 import QuizSettingSelction from 'components/QuizSettingSelction';
@@ -20,9 +22,11 @@ import {
   denyQuestion,
   saveQuestion,
 } from 'functions/questions';
+import Modal from 'components/Modal';
 
 const QuestionSubmit = ({ navigation, route }) => {
   const { isReview, submission } = route.params;
+  const [questionSubmission, setQuestionSubmission] = useState(submission);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState('');
   const [difficulty, setDifficulty] = useState('');
@@ -33,6 +37,12 @@ const QuestionSubmit = ({ navigation, route }) => {
   const [incorrectAnswer3, setIncorrectAnswer3] = useState('');
   const [notes, setNotes] = useState('');
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalText, setModalText] = useState('');
+  const [modalButtons, setModalButtons] = useState({
+    button1: {},
+    button2: {},
+  });
   const user = useSelector((state) => state.user.user);
   const categories = useSelector((state) => state.quizCategories.categories);
   const dispatch = useDispatch();
@@ -42,15 +52,15 @@ const QuestionSubmit = ({ navigation, route }) => {
       dispatch(fetchQuizCategories());
     }
     if (isReview) {
-      setCategory(submission.category);
-      setDifficulty(submission.difficulty);
-      setQuestion(submission.question);
-      setCorrectAnswer(submission.correctAnswer);
-      setIncorrectAnswer1(submission.incorrectAnswers[0]);
-      setIncorrectAnswer2(submission.incorrectAnswers[1]);
-      setIncorrectAnswer3(submission.incorrectAnswers[2]);
+      setCategory(questionSubmission.category);
+      setDifficulty(questionSubmission.difficulty);
+      setQuestion(questionSubmission.question);
+      setCorrectAnswer(questionSubmission.correctAnswer);
+      setIncorrectAnswer1(questionSubmission.incorrectAnswers[0]);
+      setIncorrectAnswer2(questionSubmission.incorrectAnswers[1]);
+      setIncorrectAnswer3(questionSubmission.incorrectAnswers[2]);
     }
-  }, []);
+  }, [questionSubmission]);
 
   const handleQuestionSubmit = async () => {
     try {
@@ -100,6 +110,7 @@ const QuestionSubmit = ({ navigation, route }) => {
           userDisplayName: submission.userDisplayName,
           notes,
         });
+        setModalButtonsOnAction('approved');
       }
     } catch (e) {
       Alert.alert(errorMessages.questionApprove);
@@ -112,6 +123,7 @@ const QuestionSubmit = ({ navigation, route }) => {
     try {
       setLoading(true);
       await denyQuestion(submission.id);
+      setModalButtonsOnAction('denied');
     } catch (e) {
       Alert.alert(errorMessages.questionDeny);
     } finally {
@@ -137,7 +149,6 @@ const QuestionSubmit = ({ navigation, route }) => {
       isValid = false;
       Alert.alert('Please provide the correct answer.');
     }
-    console.log(incorrectAnswers);
     incorrectAnswers.forEach((q) => {
       if (q.length === 0 || q === undefined) {
         console.log(q);
@@ -146,6 +157,63 @@ const QuestionSubmit = ({ navigation, route }) => {
       }
     });
     return isValid;
+  };
+
+  const setModalButtonsOnAction = (action) => {
+    setShowModal(true);
+    setModalText(
+      'Question successfully ' +
+        action +
+        "! Press 'Next' to review another question, or 'Go Back' to stop.",
+    );
+    setModalButtons({
+      button1: {
+        title: 'Go Back',
+        style: { backgroundColor: colors.incorrect },
+        action: () => navigation.popToTop(),
+      },
+      button2: {
+        title: 'Next',
+        style: { backgroundColor: colors.primaryColor },
+        action: async () => {
+          try {
+            setLoading(true);
+            await firebase
+              .firestore()
+              .collection('questionSubmissions')
+              .where('status', '==', 'Review')
+              .limit(1)
+              .get()
+              .then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                  setModalText(
+                    'Sorry, no more questions available for review.',
+                  );
+                  setModalButtons({
+                    button1: {
+                      title: 'Go Back',
+                      style: { backgroundColor: colors.incorrect },
+                      action: () => navigation.popToTop(),
+                    },
+                  });
+                }
+                querySnapshot.forEach(async (documentSnapshot) => {
+                  if (documentSnapshot.exists) {
+                    setShowModal(false);
+                    setQuestionSubmission({
+                      ...documentSnapshot.data(),
+                      id: documentSnapshot.id,
+                    });
+                  }
+                });
+              });
+          } catch {
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    });
   };
 
   return (
@@ -262,6 +330,15 @@ const QuestionSubmit = ({ navigation, route }) => {
           />
         </View>
       </BottomSheet>
+      <Modal
+        width="80%"
+        height="50%"
+        visible={showModal}
+        modalText={modalText}
+        button={modalButtons.button1}
+        button2={modalButtons.button2}
+        loading={loading}
+      />
     </ScrollView>
   );
 };
