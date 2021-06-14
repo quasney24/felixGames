@@ -17,7 +17,7 @@ const MyQuestions = ({ navigation }) => {
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     { key: 'pending', title: 'Pending' },
-    { key: 'accepted', title: 'Accepted' },
+    { key: 'approved', title: 'Approved' },
     { key: 'declined', title: 'Declined' },
   ]);
 
@@ -44,11 +44,11 @@ const MyQuestions = ({ navigation }) => {
     />
   );
 
-  const Accepted = () => (
+  const Approved = () => (
     <MyQuestionsList
-      questions={myQuestions.filter((q) => q.status === 'Accepted')}
+      questions={myQuestions.filter((q) => q.status === 'Approved')}
       isLoading={isLoading}
-      status="accepted"
+      status="approved"
     />
   );
 
@@ -62,7 +62,7 @@ const MyQuestions = ({ navigation }) => {
 
   const renderScene = SceneMap({
     pending: Pending,
-    accepted: Accepted,
+    approved: Approved,
     declined: Declined,
   });
 

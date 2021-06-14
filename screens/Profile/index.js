@@ -13,7 +13,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
+import ProfileButtons from './ProfileButtons';
 import colors from 'consts/colors';
+import errorMessages from 'consts/errorMessages';
 import { fetchQuizes } from 'store/reducers/quizes';
 import {
   addFriend,
@@ -23,9 +25,8 @@ import {
   removeFriend,
 } from 'functions/friends';
 import { updateUserFriends } from 'store/reducers/user';
-import errorMessages from 'consts/errorMessages';
-import ProfileButtons from './ProfileButtons';
 import { profileMenuOptions } from 'consts/menuOptions';
+import { getQuestionForReview } from 'functions/questions';
 import { QUESTION_SUBMIT } from 'screens/routes';
 
 const Profile = ({ navigation, route }) => {
@@ -185,6 +186,22 @@ const Profile = ({ navigation, route }) => {
     }
   };
 
+  const handleReivewAQuestion = async () => {
+    try {
+      const submission = await getQuestionForReview(user.uid);
+      if (submission) {
+        navigation.navigate(QUESTION_SUBMIT, {
+          isReview: true,
+          submission,
+        });
+      } else {
+        Alert.alert(errorMessages.questionNoReview);
+      }
+    } catch {
+      Alert.alert(errorMessages.questionLoad);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {user && (
@@ -268,25 +285,7 @@ const Profile = ({ navigation, route }) => {
                   <ListItem
                     bottomDivider
                     containerStyle={styles.profileListItem}
-                    onPress={async () => {
-                      await firebase
-                        .firestore()
-                        .collection('questionSubmissions')
-                        .where('status', '==', 'Review')
-                        .limit(1)
-                        .get()
-                        .then((querySnapshot) => {
-                          querySnapshot.forEach(async (documentSnapshot) => {
-                            navigation.navigate(QUESTION_SUBMIT, {
-                              isReview: true,
-                              submission: {
-                                ...documentSnapshot.data(),
-                                id: documentSnapshot.id,
-                              },
-                            });
-                          });
-                        });
-                    }}>
+                    onPress={handleReivewAQuestion}>
                     <ListItem.Content>
                       <ListItem.Title style={{ fontSize: 20 }}>
                         Review a Question

@@ -8,8 +8,6 @@ import {
 } from 'react-native';
 import { Alert, BottomSheet, Button, Input, Text } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
-import * as firebase from 'firebase';
-import 'firebase/firestore';
 
 import Category from 'components/Category';
 import QuizSettingSelction from 'components/QuizSettingSelction';
@@ -20,6 +18,7 @@ import { PROFILE_SCREEN } from 'screens/routes';
 import {
   approveQuestion,
   denyQuestion,
+  getQuestionForReview,
   saveQuestion,
 } from 'functions/questions';
 import Modal from 'components/Modal';
@@ -151,7 +150,6 @@ const QuestionSubmit = ({ navigation, route }) => {
     }
     incorrectAnswers.forEach((q) => {
       if (q.length === 0 || q === undefined) {
-        console.log(q);
         isValid = false;
         Alert.alert('Please provide 3 incorrect answers.');
       }
@@ -160,6 +158,12 @@ const QuestionSubmit = ({ navigation, route }) => {
   };
 
   const setModalButtonsOnAction = (action) => {
+    const goBackButton = {
+      title: 'Go Back',
+      style: { backgroundColor: colors.incorrect },
+      action: () => navigation.popToTop(),
+    };
+
     setShowModal(true);
     setModalText(
       'Question successfully ' +
@@ -167,47 +171,28 @@ const QuestionSubmit = ({ navigation, route }) => {
         "! Press 'Next' to review another question, or 'Go Back' to stop.",
     );
     setModalButtons({
-      button1: {
-        title: 'Go Back',
-        style: { backgroundColor: colors.incorrect },
-        action: () => navigation.popToTop(),
-      },
+      button1: { ...goBackButton },
       button2: {
         title: 'Next',
         style: { backgroundColor: colors.primaryColor },
         action: async () => {
           try {
             setLoading(true);
-            await firebase
-              .firestore()
-              .collection('questionSubmissions')
-              .where('status', '==', 'Review')
-              .limit(1)
-              .get()
-              .then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                  setModalText(
-                    'Sorry, no more questions available for review.',
-                  );
-                  setModalButtons({
-                    button1: {
-                      title: 'Go Back',
-                      style: { backgroundColor: colors.incorrect },
-                      action: () => navigation.popToTop(),
-                    },
-                  });
-                }
-                querySnapshot.forEach(async (documentSnapshot) => {
-                  if (documentSnapshot.exists) {
-                    setShowModal(false);
-                    setQuestionSubmission({
-                      ...documentSnapshot.data(),
-                      id: documentSnapshot.id,
-                    });
-                  }
-                });
+            const newSubmission = await getQuestionForReview(user.uid);
+            if (newSubmission) {
+              setShowModal(false);
+              setQuestionSubmission(newSubmission);
+            } else {
+              setModalText('Sorry, no more questions available for review.');
+              setModalButtons({
+                button1: { ...goBackButton },
               });
+            }
           } catch {
+            setModalText(errorMessages.questionLoad);
+            setModalButtons({
+              button1: { ...goBackButton },
+            });
           } finally {
             setLoading(false);
           }

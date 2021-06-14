@@ -49,6 +49,29 @@ export const getMyQuestions = async (uid) => {
     });
 };
 
+export const getQuestionForReview = async (uid) => {
+  return await firebase
+    .firestore()
+    .collection('questionSubmissions')
+    .where('status', '==', 'Review')
+    .where('uid', '!=', uid)
+    .limit(1)
+    .get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        return;
+      }
+      let question;
+      querySnapshot.forEach((documentSnapshot) => {
+        question = {
+          ...documentSnapshot.data(),
+          id: documentSnapshot.id,
+        };
+      });
+      return question;
+    });
+};
+
 export const approveQuestion = async (question) => {
   await firebase
     .firestore()
