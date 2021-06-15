@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
+import ProgressBar from 'react-native-progress/Bar';
 
 import colors from 'consts/colors';
 
@@ -9,11 +10,42 @@ const TriviaQuestions = ({
   category,
   currentQuestion,
   counter,
+  timePerQuestion,
   handleNext,
 }) => {
   const [selected, setSelected] = useState('');
   const [clicked, setClicked] = useState(false);
   const [correct, setCorrect] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [timerIncrement, setTimerIncrement] = useState(
+    1 / timePerQuestion || 0,
+  );
+  const [timeUp, setTimeIsUp] = useState(false);
+  const [intervalId, setIntervalId] = useState();
+
+  useEffect(() => {
+    if (timeUp) {
+      clearInterval(intervalId);
+      setClicked(true);
+      setSelected('');
+      setCorrect(false);
+    }
+    if (timePerQuestion !== 0 && !clicked) {
+      const id = setInterval(() => {
+        if (timer < 1 && !clicked) {
+          setTimer((prevState) => {
+            const newTime = prevState + timerIncrement;
+            if (newTime >= 1) {
+              setClicked(true);
+              setTimeIsUp(true);
+            }
+            return newTime;
+          });
+        }
+      }, 1000);
+      setIntervalId(id);
+    }
+  }, [clicked]);
 
   const handleCorrectResult = () => {
     return (
@@ -33,6 +65,34 @@ const TriviaQuestions = ({
 
   return (
     <View style={styles.base}>
+      <View style={{ position: 'absolute', left: 0, width: '100%' }}>
+        <ProgressBar
+          animationConfig={{ duration: 500 }}
+          animationType="timing"
+          width={null}
+          height={10}
+          borderWidth={0}
+          progress={timer}
+          color={timeUp ? colors.incorrect : colors.accentColor}
+          useNativeDriver={true}
+        />
+        {/* <CountdownCircleTimer
+          isPlaying={isPlaying}
+          size={100}
+          duration={10}
+          colors={[
+            ['#004777', 0.4],
+            ['#F7B801', 0.4],
+            ['#A30000', 0.2],
+          ]}
+          onComplete={() => [true]}>
+          {({ remainingTime, animatedColor }) => (
+            <Animated.Text style={{ color: animatedColor, fontSize: 40 }}>
+              {remainingTime}
+            </Animated.Text>
+          )}
+        </CountdownCircleTimer> */}
+      </View>
       {currentQuestion && (
         <View style={styles.container} key={currentQuestion.question}>
           <View style={styles.headerContainer}>
@@ -48,6 +108,7 @@ const TriviaQuestions = ({
               {currentQuestion.question}
             </Text>
           </View>
+
           {currentQuestion.all.map((d, i) => {
             return (
               <TouchableOpacity
@@ -55,6 +116,7 @@ const TriviaQuestions = ({
                 style={styles.contentWrapper}
                 disabled={clicked}
                 onPress={() => {
+                  clearInterval(intervalId);
                   setClicked(true);
                   setSelected(d);
                   setCorrect(
@@ -86,6 +148,8 @@ const TriviaQuestions = ({
             onPress={() => {
               handleNext(selected, correct);
               setClicked(false);
+              setTimer(0);
+              setTimeIsUp(false);
             }}>
             <View style={styles.textBox}>
               <Text

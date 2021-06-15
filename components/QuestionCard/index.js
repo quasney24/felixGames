@@ -4,10 +4,18 @@ import { Card } from 'react-native-elements';
 import colors from 'consts/colors';
 
 const QuestionCard = ({ question }) => {
+  console.log(question.selectedAnswer);
   return (
     <View style={styles.container}>
       <Card containerStyle={styles.cardContainer}>
         <Card.Title style={styles.headerText}>{question.question}</Card.Title>
+        {question.selectedAnswer === '' && (
+          <View style={styles.noAnswerSelectedContainer}>
+            <Text style={{ ...styles.choiceText, ...styles.incorrectAnswer }}>
+              No answer selected.
+            </Text>
+          </View>
+        )}
         {question.all.map((choice) => {
           if (question.correctAnswer === choice) {
             return (
@@ -51,6 +59,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 2,
     marginTop: 0,
+  },
+  noAnswerSelectedContainer: {
+    marginBottom: 10,
   },
   choiceTextContainer: {
     marginVertical: 5,
