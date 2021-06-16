@@ -29,7 +29,7 @@ const Friends = ({ navigation }) => {
 
   useEffect(() => {
     fetchRequests();
-  }, [dispatch]);
+  }, []);
 
   const fetchRequests = async () => {
     const requests = await getUsersFriendRequests(user.uid);
