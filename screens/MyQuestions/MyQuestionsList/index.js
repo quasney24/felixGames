@@ -7,7 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import { Card } from 'react-native-elements';
+import { Card, Divider } from 'react-native-elements';
 
 const MyQuestionsList = ({ questions, isLoading, status }) => {
   return (
@@ -18,7 +18,7 @@ const MyQuestionsList = ({ questions, isLoading, status }) => {
         </View>
       )}
       {questions.length === 0 && (
-        <View style={{ alignItems: 'center' }}>
+        <View style={{ alignItems: 'center', paddingTop: 30 }}>
           <Text style={{ ...styles.text, ...styles.label }}>
             No questions {status}.
           </Text>
@@ -29,7 +29,10 @@ const MyQuestionsList = ({ questions, isLoading, status }) => {
           <View key={q.id}>
             <Card containerStyle={styles.cardContainer}>
               <Card.Title style={styles.headerText}>{q.question}</Card.Title>
-              <View>
+              <Divider
+                style={{ backgroundColor: colors.primaryColor, height: 1 }}
+              />
+              <View style={{ marginTop: 20 }}>
                 <Text style={{ ...styles.text, ...styles.label }}>
                   Category
                 </Text>
@@ -55,6 +58,19 @@ const MyQuestionsList = ({ questions, isLoading, status }) => {
                   <Text style={styles.text}>{a}</Text>
                 ))}
               </View>
+              {q.notes.length > 0 && (
+                <View style={{ marginTop: 20 }}>
+                  <Divider
+                    style={{ backgroundColor: colors.primaryColor, height: 1 }}
+                  />
+                  <View style={{ marginTop: 20 }}>
+                    <Text style={{ ...styles.text, ...styles.label }}>
+                      Notes
+                    </Text>
+                    <Text style={styles.text}>{q.notes}</Text>
+                  </View>
+                </View>
+              )}
             </Card>
           </View>
         );
@@ -65,9 +81,8 @@ const MyQuestionsList = ({ questions, isLoading, status }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.white,
-    marginTop: 20,
+    paddingBottom: 30,
   },
   headerText: {
     fontSize: 18,
@@ -76,6 +91,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 15,
     borderWidth: 2,
+    marginVertical: 30,
   },
   text: {
     fontSize: 16,
