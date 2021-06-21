@@ -17,6 +17,8 @@ import ProfileButtons from './ProfileButtons';
 import colors from 'consts/colors';
 import errorMessages from 'consts/errorMessages';
 import { fetchQuizes } from 'store/reducers/quizes';
+import { updateUserFriends } from 'store/reducers/user';
+import { getQuestionForReview } from 'functions/questions';
 import {
   addFriend,
   createFriendRequest,
@@ -24,10 +26,12 @@ import {
   findFriendRequest,
   removeFriend,
 } from 'functions/friends';
-import { updateUserFriends } from 'store/reducers/user';
-import { profileMenuOptions } from 'consts/menuOptions';
-import { getQuestionForReview } from 'functions/questions';
-import { QUESTION_SUBMIT } from 'screens/routes';
+import {
+  FRIENDS_SCREEN,
+  MY_QUESTIONS_SCREEN,
+  QUESTION_SUBMIT,
+  QUIZ_RESULTS_LIST_SCREEN,
+} from 'screens/routes';
 
 const Profile = ({ navigation, route }) => {
   const { displayName, userId } = route.params;
@@ -46,6 +50,20 @@ const Profile = ({ navigation, route }) => {
     fetchUser();
   }, []);
 
+  const menuOptions = [
+    {
+      title: 'Quizzes',
+      navigation: QUIZ_RESULTS_LIST_SCREEN,
+    },
+    {
+      title: 'Friends',
+      navigation: FRIENDS_SCREEN,
+    },
+    {
+      title: 'My Questions',
+      navigation: MY_QUESTIONS_SCREEN,
+    },
+  ];
 
   const fetchUser = async () => {
     if (user !== null) {
@@ -250,7 +268,7 @@ const Profile = ({ navigation, route }) => {
             )}
             {!fetchingQuizes && user.uid === profile.uid && (
               <>
-                {profileMenuOptions.map((option) => (
+                {menuOptions.map((option) => (
                   <ListItem
                     key={option.title}
                     bottomDivider

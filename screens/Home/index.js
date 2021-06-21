@@ -1,13 +1,36 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
 import colors from 'consts/colors';
-import { homeMenuOptions } from 'consts/menuOptions';
+import { QUESTION_SUBMIT, TRIVIA_SCREEN } from 'screens/routes';
 
 const Home = ({ navigation }) => {
+  const menuOptions = [
+    {
+      title: 'Accuracy',
+      subtitle: 'Get them all Right!',
+      navigation: TRIVIA_SCREEN,
+      params: {},
+    },
+    {
+      title: 'Speed',
+      subtitle: 'Better go fast!',
+      navigation: TRIVIA_SCREEN,
+      params: {},
+    },
+    {
+      title: 'Submit a Question',
+      subtitle: 'Contribute your knowledge!',
+      navigation: QUESTION_SUBMIT,
+      params: { isReview: false },
+    },
+  ];
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}>
       <Card containerStyle={{ ...styles.cardContainer, ...styles.welcomeCard }}>
         <Card.Title style={{ ...styles.headerText, ...styles.centerText }}>
           Welcome Players
@@ -31,7 +54,7 @@ const Home = ({ navigation }) => {
           Trivia
         </Card.Title>
         <Card.Divider style={styles.cardDivider} />
-        {homeMenuOptions.map((option) => (
+        {menuOptions.map((option) => (
           <ListItem
             key={option.title}
             onPress={() =>
@@ -53,7 +76,7 @@ const Home = ({ navigation }) => {
         </Card.Title>
         <Card.Divider />
       </Card>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -74,6 +97,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  contentContainer: {
+    paddingBottom: 30,
   },
   headerText: {
     fontSize: 22,
