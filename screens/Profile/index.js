@@ -13,9 +13,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
+import ProfileButtons from './ProfileButtons';
 import colors from 'consts/colors';
-import { FRIENDS_SCREEN, QUIZ_RESULTS_LIST_SCREEN } from 'screens/routes';
+import errorMessages from 'consts/errorMessages';
 import { fetchQuizes } from 'store/reducers/quizes';
+import { updateUserFriends } from 'store/reducers/user';
+import { getQuestionForReview } from 'functions/questions';
 import {
   addFriend,
   createFriendRequest,
@@ -23,9 +26,12 @@ import {
   findFriendRequest,
   removeFriend,
 } from 'functions/friends';
-import { updateUserFriends } from 'store/reducers/user';
-import errorMessages from 'consts/errorMessages';
-import ProfileButtons from './ProfileButtons';
+import {
+  FRIENDS_SCREEN,
+  MY_QUESTIONS_SCREEN,
+  QUESTION_SUBMIT,
+  QUIZ_RESULTS_LIST_SCREEN,
+} from 'screens/routes';
 
 const Profile = ({ navigation, route }) => {
   const { displayName, userId } = route.params;
@@ -43,6 +49,21 @@ const Profile = ({ navigation, route }) => {
   useEffect(() => {
     fetchUser();
   }, []);
+
+  const menuOptions = [
+    {
+      title: 'Quizzes',
+      navigation: QUIZ_RESULTS_LIST_SCREEN,
+    },
+    {
+      title: 'Friends',
+      navigation: FRIENDS_SCREEN,
+    },
+    {
+      title: 'My Questions',
+      navigation: MY_QUESTIONS_SCREEN,
+    },
+  ];
 
   const fetchUser = async () => {
     if (user !== null) {
@@ -183,6 +204,22 @@ const Profile = ({ navigation, route }) => {
     }
   };
 
+  const handleReivewAQuestion = async () => {
+    try {
+      const submission = await getQuestionForReview(user.uid);
+      if (submission) {
+        navigation.navigate(QUESTION_SUBMIT, {
+          isReview: true,
+          submission,
+        });
+      } else {
+        Alert.alert(errorMessages.questionNoReview);
+      }
+    } catch {
+      Alert.alert(errorMessages.questionLoad);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {user && (
@@ -231,52 +268,57 @@ const Profile = ({ navigation, route }) => {
             )}
             {!fetchingQuizes && user.uid === profile.uid && (
               <>
-                <ListItem
-                  bottomDivider
-                  containerStyle={styles.profileListItem}
-                  onPress={() => {
-                    navigation.navigate(QUIZ_RESULTS_LIST_SCREEN);
-                  }}>
-                  <ListItem.Content>
-                    <ListItem.Title style={{ fontSize: 20 }}>
-                      Quizzes
-                    </ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Content style={{ alignItems: 'flex-end' }}>
-                    <Badge
-                      value={userQuizes.length}
-                      badgeStyle={styles.listItemBadge}
+                {menuOptions.map((option) => (
+                  <ListItem
+                    key={option.title}
+                    bottomDivider
+                    containerStyle={styles.profileListItem}
+                    onPress={() => {
+                      navigation.navigate(option.navigation);
+                    }}>
+                    <ListItem.Content>
+                      <ListItem.Title style={{ fontSize: 20 }}>
+                        {option.title}
+                      </ListItem.Title>
+                    </ListItem.Content>
+                    {option.title === 'Quizzes' && (
+                      <ListItem.Content style={{ alignItems: 'flex-end' }}>
+                        <Badge
+                          value={userQuizes.length}
+                          badgeStyle={styles.listItemBadge}
+                        />
+                      </ListItem.Content>
+                    )}
+                    <ListItem.Chevron
+                      size={35}
+                      name={
+                        Platform.OS === 'ios'
+                          ? 'ios-arrow-forward'
+                          : 'chevron-right'
+                      }
                     />
-                  </ListItem.Content>
-                  <ListItem.Chevron
-                    size={35}
-                    name={
-                      Platform.OS === 'ios'
-                        ? 'ios-arrow-forward'
-                        : 'chevron-right'
-                    }
-                  />
-                </ListItem>
-                <ListItem
-                  bottomDivider
-                  containerStyle={styles.profileListItem}
-                  onPress={() => {
-                    navigation.navigate(FRIENDS_SCREEN);
-                  }}>
-                  <ListItem.Content>
-                    <ListItem.Title style={{ fontSize: 20 }}>
-                      Friends
-                    </ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Chevron
-                    size={35}
-                    name={
-                      Platform.OS === 'ios'
-                        ? 'ios-arrow-forward'
-                        : 'chevron-right'
-                    }
-                  />
-                </ListItem>
+                  </ListItem>
+                ))}
+                {user.admin && (
+                  <ListItem
+                    bottomDivider
+                    containerStyle={styles.profileListItem}
+                    onPress={handleReivewAQuestion}>
+                    <ListItem.Content>
+                      <ListItem.Title style={{ fontSize: 20 }}>
+                        Review a Question
+                      </ListItem.Title>
+                    </ListItem.Content>
+                    <ListItem.Chevron
+                      size={35}
+                      name={
+                        Platform.OS === 'ios'
+                          ? 'ios-arrow-forward'
+                          : 'chevron-right'
+                      }
+                    />
+                  </ListItem>
+                )}
               </>
             )}
           </ScrollView>

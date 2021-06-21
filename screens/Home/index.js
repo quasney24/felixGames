@@ -1,25 +1,36 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Text, Card, ListItem } from 'react-native-elements';
 
-import { TRIVIA_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
+import { QUESTION_SUBMIT, TRIVIA_SCREEN } from 'screens/routes';
 
 const Home = ({ navigation }) => {
-  //@TODO refactor app to build factory pattern style utilizing classes for game types
-  const triviaOptions = [
+  const menuOptions = [
     {
-      type: 'Accuracy',
-      subType: 'Get them all Right!',
+      title: 'Accuracy',
+      subtitle: 'Get them all Right!',
+      navigation: TRIVIA_SCREEN,
+      params: {},
     },
     {
-      type: 'Speed',
-      subType: 'Better go fast!',
+      title: 'Speed',
+      subtitle: 'Better go fast!',
+      navigation: TRIVIA_SCREEN,
+      params: {},
+    },
+    {
+      title: 'Submit a Question',
+      subtitle: 'Contribute your knowledge!',
+      navigation: QUESTION_SUBMIT,
+      params: { isReview: false },
     },
   ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}>
       <Card containerStyle={{ ...styles.cardContainer, ...styles.welcomeCard }}>
         <Card.Title style={{ ...styles.headerText, ...styles.centerText }}>
           Welcome Players
@@ -43,21 +54,20 @@ const Home = ({ navigation }) => {
           Trivia
         </Card.Title>
         <Card.Divider style={styles.cardDivider} />
-        {triviaOptions.map((l, i) => {
-          console.log(l);
-          return (
-            <ListItem
-              key={l.type}
-              onPress={() => navigation.navigate(TRIVIA_SCREEN)}
-              bottomDivider>
-              <ListItem.Content>
-                <ListItem.Title>{l.type}</ListItem.Title>
-                <ListItem.Subtitle>{l.subType}</ListItem.Subtitle>
-              </ListItem.Content>
-              <ListItem.Chevron color={colors.primaryColor} size={32} />
-            </ListItem>
-          );
-        })}
+        {menuOptions.map((option) => (
+          <ListItem
+            key={option.title}
+            onPress={() =>
+              navigation.navigate(option.navigation, option.params)
+            }
+            bottomDivider>
+            <ListItem.Content>
+              <ListItem.Title>{option.title}</ListItem.Title>
+              <ListItem.Subtitle>{option.subtitle}</ListItem.Subtitle>
+            </ListItem.Content>
+            <ListItem.Chevron color={colors.primaryColor} size={32} />
+          </ListItem>
+        ))}
       </Card>
 
       <Card containerStyle={styles.cardContainer}>
@@ -66,7 +76,7 @@ const Home = ({ navigation }) => {
         </Card.Title>
         <Card.Divider />
       </Card>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -87,6 +97,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  contentContainer: {
+    paddingBottom: 30,
   },
   headerText: {
     fontSize: 22,

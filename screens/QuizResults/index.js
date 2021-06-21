@@ -26,7 +26,6 @@ const QuizResults = ({ navigation, route }) => {
         </Text>
       </View>
       {quizResults.questions.map((q) => {
-        console.log(q);
         return <QuestionCard key={q.question} question={q} />;
       })}
     </ScrollView>

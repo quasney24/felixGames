@@ -1,11 +1,12 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   View,
   StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
-import { Text, Button, Overlay, Input } from 'react-native-elements';
+import { Text, Button, Overlay } from 'react-native-elements';
 import colors from 'consts/colors';
 
 export default function Modal({
@@ -15,31 +16,41 @@ export default function Modal({
   modalText,
   button,
   button2,
+  loading,
 }) {
   return (
     <Overlay
       isVisible={visible}
       overlayStyle={{ ...styles.buttonContainer, width, height }}>
       <View style={styles.container}>
-        <Text style={styles.modalText}>{modalText}</Text>
-        <View style={styles.buttonContainer}>
-          <View style={styles.button}>
-            <Button
-              title={button.title}
-              buttonStyle={button.style}
-              onPress={button.action}
-            />
+        {loading && (
+          <View style={styles.loadingSpinner}>
+            <ActivityIndicator size="large" color={colors.primaryColor} />
           </View>
-          {button2 ? (
-            <View style={styles.button}>
-              <Button
-                title={button2.title}
-                buttonStyle={button2.style}
-                onPress={button2.action}
-              />
+        )}
+        {!loading && (
+          <>
+            <Text style={styles.modalText}>{modalText}</Text>
+            <View style={styles.buttonContainer}>
+              <View style={styles.button}>
+                <Button
+                  title={button.title}
+                  buttonStyle={button.style}
+                  onPress={button.action}
+                />
+              </View>
+              {button2 ? (
+                <View style={styles.button}>
+                  <Button
+                    title={button2.title}
+                    buttonStyle={button2.style}
+                    onPress={button2.action}
+                  />
+                </View>
+              ) : null}
             </View>
-          ) : null}
-        </View>
+          </>
+        )}
       </View>
     </Overlay>
   );
@@ -73,5 +84,10 @@ const styles = StyleSheet.create({
   button: {
     width: '40%',
     padding: '2%',
+  },
+  loadingSpinner: {
+    height: 75,
+    justifyContent: 'center',
+    marginTop: '10%',
   },
 });
