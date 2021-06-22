@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Avatar, Badge, ListItem } from 'react-native-elements';
 import { useDispatch, useSelector } from 'react-redux';
+import Axios from 'axios';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
@@ -43,6 +44,7 @@ const Profile = ({ navigation, route }) => {
   const [isPendingRequestFor, setIsPendingRequestFor] = useState(false);
   const [friendRequest, setFriendRequest] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [isScraping, setIsScraping] = useState(false);
   const [error, setError] = useState(false);
   const dispatch = useDispatch();
 
@@ -220,6 +222,22 @@ const Profile = ({ navigation, route }) => {
     }
   };
 
+  const handleScrapeOpenTDB = async () => {
+    setIsScraping(true);
+    await Axios.get(
+      'https://us-central1-felix-games.cloudfunctions.net/scrapeOpenTDBQuestions',
+    )
+      .then(async (res) => {
+        Alert.alert(res.data.questionsAdded + ' new questions added.');
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setIsScraping(false);
+      });
+  };
+
   return (
     <View style={styles.container}>
       {user && (
@@ -300,24 +318,49 @@ const Profile = ({ navigation, route }) => {
                   </ListItem>
                 ))}
                 {user.admin && (
-                  <ListItem
-                    bottomDivider
-                    containerStyle={styles.profileListItem}
-                    onPress={handleReivewAQuestion}>
-                    <ListItem.Content>
-                      <ListItem.Title style={{ fontSize: 20 }}>
-                        Review a Question
-                      </ListItem.Title>
-                    </ListItem.Content>
-                    <ListItem.Chevron
-                      size={35}
-                      name={
-                        Platform.OS === 'ios'
-                          ? 'ios-arrow-forward'
-                          : 'chevron-right'
-                      }
-                    />
-                  </ListItem>
+                  <>
+                    <ListItem
+                      bottomDivider
+                      containerStyle={styles.profileListItem}
+                      onPress={handleReivewAQuestion}>
+                      <ListItem.Content>
+                        <ListItem.Title style={{ fontSize: 20 }}>
+                          Review a Question
+                        </ListItem.Title>
+                      </ListItem.Content>
+                      <ListItem.Chevron
+                        size={35}
+                        name={
+                          Platform.OS === 'ios'
+                            ? 'ios-arrow-forward'
+                            : 'chevron-right'
+                        }
+                      />
+                    </ListItem>
+                    <ListItem
+                      bottomDivider
+                      containerStyle={styles.profileListItem}
+                      onPress={handleScrapeOpenTDB}>
+                      <ListItem.Content>
+                        <ListItem.Title style={{ fontSize: 20 }}>
+                          Scrape OpenTDB
+                        </ListItem.Title>
+                      </ListItem.Content>
+                      <ListItem.Content style={{ alignItems: 'flex-end' }}>
+                        <View style={{ flexDirection: 'row' }}>
+                          {isScraping && (
+                            <View>
+                              <ActivityIndicator
+                                size="large"
+                                color={colors.primaryColor}
+                                style={styles.loadingIndicator}
+                              />
+                            </View>
+                          )}
+                        </View>
+                      </ListItem.Content>
+                    </ListItem>
+                  </>
                 )}
               </>
             )}
