@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   View,
   StyleSheet,
   ScrollView,
@@ -16,11 +17,12 @@ import { getTriviaData } from 'functions/quiz';
 import { fetchQuizCategories } from 'store/reducers/quizCategories';
 import { TRIVIAQ_SCREEN } from 'screens/routes';
 import colors from 'consts/colors';
+import errorMessages from 'consts/errorMessages';
 
 const Trivia = ({ navigation }) => {
   const [difficulty, setDifficulty] = useState('');
   const [time, setTime] = useState(0);
-  const [categoryId, setCategoryId] = useState();
+  const [category, setCategory] = useState();
   const [loading, setLoading] = useState(false);
   const [phaseTwo, setPhaseTwo] = useState(false);
   const categories = useSelector((state) => state.quizCategories.categories);
@@ -36,11 +38,17 @@ const Trivia = ({ navigation }) => {
   }, []);
 
   const handleSubmit = async () => {
-    console.log(categoryId, difficulty);
     setLoading(true);
-    const triviaData = await getTriviaData(categoryId, difficulty);
+    const triviaData = await getTriviaData(category, difficulty);
     setLoading(false);
-    navigation.navigate(TRIVIAQ_SCREEN, { triviaData, timePerQuestion: time });
+    if (triviaData.questions.length < 10) {
+      Alert.alert(errorMessages.quizQuestions);
+    } else {
+      navigation.navigate(TRIVIAQ_SCREEN, {
+        triviaData,
+        timePerQuestion: time,
+      });
+    }
   };
 
   React.useLayoutEffect(() => {
@@ -67,7 +75,7 @@ const Trivia = ({ navigation }) => {
           <Category
             data={categories}
             getId={(value) => {
-              setCategoryId(value);
+              setCategory(value);
               setPhaseTwo(true);
             }}
           />

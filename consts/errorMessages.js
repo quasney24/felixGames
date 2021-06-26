@@ -10,5 +10,7 @@ export default {
   questionLoad: 'Trouble loading question, please try again.',
   questionNoReview: 'No questions available for review at this time.',
   questionSubmit: 'Trouble sbmitting question, please try again.',
+  quizQuestions:
+    'Sorry, not enough questions for this category and difficulty at this time.',
   myQuestionsError: 'Trouble loading your questions, please try again.',
 };

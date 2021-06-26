@@ -13,7 +13,7 @@ const Category = ({ data, getId }) => {
               <TouchableOpacity
                 key={value.id}
                 style={styles.wrapper}
-                onPress={() => getId(value.id)}>
+                onPress={() => getId(value.name)}>
                 <Text style={styles.text}>{value.name}</Text>
               </TouchableOpacity>
             </View>
