@@ -300,24 +300,26 @@ const Profile = ({ navigation, route }) => {
                   </ListItem>
                 ))}
                 {user.admin && (
-                  <ListItem
-                    bottomDivider
-                    containerStyle={styles.profileListItem}
-                    onPress={handleReivewAQuestion}>
-                    <ListItem.Content>
-                      <ListItem.Title style={{ fontSize: 20 }}>
-                        Review a Question
-                      </ListItem.Title>
-                    </ListItem.Content>
-                    <ListItem.Chevron
-                      size={35}
-                      name={
-                        Platform.OS === 'ios'
-                          ? 'ios-arrow-forward'
-                          : 'chevron-right'
-                      }
-                    />
-                  </ListItem>
+                  <>
+                    <ListItem
+                      bottomDivider
+                      containerStyle={styles.profileListItem}
+                      onPress={handleReivewAQuestion}>
+                      <ListItem.Content>
+                        <ListItem.Title style={{ fontSize: 20 }}>
+                          Review a Question
+                        </ListItem.Title>
+                      </ListItem.Content>
+                      <ListItem.Chevron
+                        size={35}
+                        name={
+                          Platform.OS === 'ios'
+                            ? 'ios-arrow-forward'
+                            : 'chevron-right'
+                        }
+                      />
+                    </ListItem>
+                  </>
                 )}
               </>
             )}
